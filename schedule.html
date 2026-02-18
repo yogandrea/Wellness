@@ -1,44 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Schedule</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schedule</title>
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+.gallery-container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:15px;
+    margin-top:25px;
+    flex-wrap:wrap;
+}
+
+.gallery-container img{
+    width:100%;
+    max-width:600px;
+    height:400px;
+    object-fit:cover;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+.gallery-container button{
+    font-size:24px;
+    padding:10px 18px;
+    cursor:pointer;
+}
+
+.latest-img{
+    width:100%;
+    max-width:500px;
+    border-radius:14px;
+    margin-top:15px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+.signup-box{
+    margin-top:40px;
+    background:white;
+    padding:20px;
+    max-width:420px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+
+.signup-box input{
+    width:95%;
+    padding:10px;
+    margin:8px 0;
+}
+
+.submit-btn{
+    background:#4CAF50;
+    color:white;
+    border:none;
+    padding:12px;
+    width:100%;
+    cursor:pointer;
+}
+
+.success{ margin-top:10px; font-weight:bold; }
+</style>
 </head>
+
 <body>
-  <nav class="nav">
-    <a href="index.html">Home</a>
-    <a href="schedule.html">Schedule</a>
-    <a href="services.html">Services</a>
-    <a href="about.html">About Us</a>
-  </nav>
 
-  <main class="schedule">
-    <h1>Upcoming Events</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Event</th>
-          <th>Location</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>2026-03-01</td>
-          <td>Yoga Workshop</td>
-          <td>Studio A</td>
-        </tr>
-        <tr>
-          <td>2026-03-15</td>
-          <td>Meditation Class</td>
-          <td>Online</td>
-        </tr>
-      </tbody>
-    </table>
-  </main>
+<nav class="nav">
+  <a href="index.html">Home</a>
+  <a href="schedule.html">Schedule</a>
+  <a href="services.html">Services</a>
+  <a href="about.html">About Us</a>
+</nav>
 
-  <script src="js/main.js"></script>
+<main class="schedule">
+
+<h1>Upcoming Events</h1>
+
+<!-- LATEST -->
+<h2>Latest Event</h2>
+<div id="latest-event">Loading...</div>
+
+<!-- GALLERY -->
+<h2>Past Event Photos</h2>
+<div class="gallery-container">
+<button id="prevBtn">◀</button>
+<img id="galleryImage">
+<button id="nextBtn">▶</button>
+</div>
+
+<!-- SIGNUP -->
+<div class="signup-box">
+<h2>Register Interest</h2>
+<form id="signupForm">
+<input type="text" id="name" placeholder="Your Name" required>
+<input type="email" id="email" placeholder="Your Email" required>
+<button class="submit-btn">Submit</button>
+<div class="success" id="msg"></div>
+</form>
+</div>
+
+</main>
+
+<script>
+// ================= SETTINGS =================
+const username = "yogandrea";
+const repo = "Wellness";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynn2lIa8I--zwis12YttudV00gPyZXmAsW_m8h1z14o3zfj1ScMK76Q6ZKl7UySo1N/exec";
+const folder = "media/Events";
+
+const apiURL = `https://api.github.com/repos/${username}/${repo}/contents/${folder}`;
+
+let images=[];
+let currentIndex=0;
+
+// ================= LOAD IMAGES =================
+async function loadImages(){
+try{
+    const res = await fetch(apiURL);
+    const data = await res.json();
+
+    images = data.filter(f => f.name.toLowerCase().endsWith(".jpg"));
+
+    if(images.length===0){
+        document.getElementById("latest-event").innerText="No images uploaded yet";
+        return;
+    }
+
+    // latest uploaded
+    const latest = images[images.length-1].download_url;
+    document.getElementById("latest-event").innerHTML =
+      `<img src="${latest}" class="latest-img">`;
+
+    showImage(0);
+
+}catch(err){
+    document.getElementById("latest-event").innerText="Unable to load images";
+}
+}
+
+function showImage(i){
+    document.getElementById("galleryImage").src = images[i].download_url;
+}
+
+document.getElementById("prevBtn").onclick=()=>{
+    if(images.length===0) return;
+    currentIndex--;
+    if(currentIndex<0) currentIndex=images.length-1;
+    showImage(currentIndex);
+}
+
+document.getElementById("nextBtn").onclick=()=>{
+    if(images.length===0) return;
+    currentIndex++;
+    if(currentIndex>=images.length) currentIndex=0;
+    showImage(currentIndex);
+}
+
+loadImages();
+
+// ================= GOOGLE SHEET SUBMIT =================
+document.getElementById("signupForm").addEventListener("submit", async function(e){
+e.preventDefault();
+
+const name=document.getElementById("name").value.trim();
+const email=document.getElementById("email").value.trim();
+const msg=document.getElementById("msg");
+
+if(!name || !email){
+    msg.innerText="Please fill all fields";
+    msg.style.color="red";
+    return;
+}
+
+msg.innerText="Submitting...";
+msg.style.color="black";
+
+try{
+await fetch(SCRIPT_URL,{
+    method:"POST",
+    mode:"no-cors",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+        name:name,
+        email:email,
+        page:"schedule"
+    })
+});
+
+msg.innerText="Registration received ✔";
+msg.style.color="green";
+this.reset();
+
+}catch(err){
+msg.innerText="Submission failed ❌";
+msg.style.color="red";
+}
+});
+</script>
+
+<script src="js/main.js"></script>
 </body>
 </html>

@@ -7,10 +7,11 @@
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* Booking Section Styles */
-    #bookings { padding:20px; }
+    /* ------------------- Bookings Calendar ------------------- */
+    #bookings { padding:20px; margin-top:50px; }
+    #calendar-header { display:flex; justify-content: space-between; align-items:center; max-width:800px; margin:10px auto; }
     #calendar-container { display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; max-width:800px; margin:auto; }
-    .calendar-day { border:1px solid #ccc; padding:10px; text-align:center; cursor:pointer; border-radius:5px; }
+    .calendar-day { border:1px solid #ccc; padding:10px; text-align:center; cursor:pointer; border-radius:5px; min-height:50px; }
     .calendar-day:hover { background:#f0f0f0; }
     .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000; }
     .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:400px; position:relative; }
@@ -26,7 +27,7 @@
     <a href="index.html">Home</a>
     <a href="schedule.html">Schedule</a>
     <a href="services.html">Services</a>
-    <a href="#bookings">Bookings</a>
+    <a href="#" id="header-bookings-link">Bookings</a>
     <a href="about.html">About Us</a>
   </nav>
 
@@ -37,13 +38,16 @@
     <div id="visitor-counter" style="text-align:center; margin-top:20px; font-size:18px;">
       🌍 Loading visitors...
     </div>
-
-    <!-- ✅ Debug info -->
     <pre id="visitor-debug" style="text-align:center; margin-top:10px; color:red;"></pre>
 
-    <!-- ---------------- Bookings Section ---------------- -->
+    <!-- ------------------- Bookings Section ------------------- -->
     <section id="bookings">
       <h2 style="text-align:center;">Bookings</h2>
+      <div id="calendar-header">
+        <button id="prev-month">&lt; Prev</button>
+        <span id="calendar-month"></span>
+        <button id="next-month">Next &gt;</button>
+      </div>
       <div id="calendar-container"></div>
 
       <!-- Instructor Modal -->
@@ -79,39 +83,25 @@
 
   <script src="js/main.js"></script>
 
-  <!-- ---------------- Visitor Counter Script ---------------- -->
+  <!-- ------------------- Visitor Counter Script ------------------- -->
   <script>
 async function loadVisitors() {
   const counterEl = document.getElementById("visitor-counter");
   const debugEl = document.getElementById("visitor-debug");
-
   try {
     const res = await fetch(
       "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
       { method: "POST", headers: { "Content-Type": "application/json" } }
     );
-
     const data = await res.json();
-
-    if (data.error) {
-      counterEl.innerText = "🌍 Visitors unavailable";
-      debugEl.innerText = "Error: " + data.error;
-    } else {
-      counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
-      debugEl.innerText = "";
-    }
-
-  } catch (err) {
-    console.error(err);
-    counterEl.innerText = "🌍 Visitors unavailable";
-    debugEl.innerText = "Fetch error: " + err.message;
-  }
+    if (data.error) { counterEl.innerText = "🌍 Visitors unavailable"; debugEl.innerText = "Error: "+data.error; }
+    else { counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0); debugEl.innerText=""; }
+  } catch(err){ counterEl.innerText="🌍 Visitors unavailable"; debugEl.innerText="Fetch error: "+err.message; }
 }
-
 loadVisitors();
   </script>
 
-  <!-- ---------------- Bookings Script ---------------- -->
+  <!-- ------------------- Bookings Script ------------------- -->
   <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
@@ -120,17 +110,24 @@ const supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY"; // replace with your anon key
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const calendarContainer = document.getElementById("calendar-container");
+const calendarMonthLabel = document.getElementById("calendar-month");
 const instructorModal = document.getElementById("instructor-modal");
 const studentModal = document.getElementById("student-modal");
 let selectedDate = null;
+let currentMonthOffset = 0;
 
-// ---------------- Render Monthly Calendar ----------------
+// ------------------- Render Monthly Calendar -------------------
 function renderCalendar(monthOffset=0){
   calendarContainer.innerHTML = "";
   const now = new Date();
-  const month = now.getMonth() + monthOffset;
+  const month = now.getMonth()+monthOffset;
   const year = now.getFullYear();
+  const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month+1, 0);
+
+  // Update month label
+  calendarMonthLabel.innerText = firstDay.toLocaleString('default', { month:'long', year:'numeric' });
+
   for(let d=1; d<=lastDay.getDate(); d++){
     const date = new Date(year, month, d);
     const dayDiv = document.createElement("div");
@@ -141,9 +138,19 @@ function renderCalendar(monthOffset=0){
     calendarContainer.appendChild(dayDiv);
   }
 }
-renderCalendar();
+renderCalendar(currentMonthOffset);
 
-// ---------------- Open Modal Depending on Role ----------------
+// ------------------- Prev/Next Month Buttons -------------------
+document.getElementById("prev-month").onclick = ()=>{
+  currentMonthOffset--;
+  renderCalendar(currentMonthOffset);
+};
+document.getElementById("next-month").onclick = ()=>{
+  currentMonthOffset++;
+  renderCalendar(currentMonthOffset);
+};
+
+// ------------------- Open Modal Depending on Role -------------------
 function openDayModal(date){
   const role = prompt("Are you an instructor? (yes/no)").toLowerCase();
   if(role==="yes"){
@@ -156,7 +163,7 @@ function openDayModal(date){
   }
 }
 
-// ---------------- Instructor Modal Logic ----------------
+// ------------------- Instructor Modal Logic -------------------
 document.getElementById("close-instructor").onclick = ()=> instructorModal.style.display="none";
 document.getElementById("verify-password").onclick = ()=>{
   const pw = document.getElementById("instructor-password").value;
@@ -175,13 +182,13 @@ document.getElementById("add-class").onclick = async ()=>{
   instructorModal.style.display="none";
 };
 
-// ---------------- Student Modal Logic ----------------
+// ------------------- Student Modal Logic -------------------
 document.getElementById("close-student").onclick = ()=> studentModal.style.display="none";
 async function loadStudentClasses(date){
   const { data: classes, error } = await supabase.from("classes").select("*").gte("start_time", date+"T00:00").lte("end_time", date+"T23:59");
   const listEl = document.getElementById("student-classes-list");
   listEl.innerHTML = "";
-  if(error) { listEl.innerText = error.message; return; }
+  if(error){ listEl.innerText=error.message; return; }
   if(classes.length===0){ listEl.innerText="No classes for this day"; return; }
   for(const c of classes){
     const div = document.createElement("div");
@@ -195,6 +202,15 @@ async function loadStudentClasses(date){
     };
     listEl.appendChild(div);
   }
+}
+
+// ------------------- Header Bookings Link -------------------
+const headerBookingsLink = document.getElementById("header-bookings-link");
+if(headerBookingsLink){
+  headerBookingsLink.onclick = (e)=>{
+    e.preventDefault();
+    document.getElementById("bookings").scrollIntoView({behavior:"smooth"});
+  };
 }
   </script>
 

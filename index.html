@@ -178,78 +178,77 @@ loadVisitors();
       calendarContainer.appendChild(dayDiv);
     }
   }
-</script>
 
-renderCalendar(currentMonthOffset);
-document.getElementById("prev-month").onclick = () => { currentMonthOffset--; renderCalendar(currentMonthOffset); };
-document.getElementById("next-month").onclick = () => { currentMonthOffset++; renderCalendar(currentMonthOffset); };
+  renderCalendar(currentMonthOffset);
+  document.getElementById("prev-month").onclick = () => { currentMonthOffset--; renderCalendar(currentMonthOffset); };
+  document.getElementById("next-month").onclick = () => { currentMonthOffset++; renderCalendar(currentMonthOffset); };
 
-// Role modal buttons
-document.getElementById("close-role").onclick = () => roleModal.style.display = "none";
-document.getElementById("role-instructor").onclick = () => { roleModal.style.display = "none"; openInstructorModal(); };
-document.getElementById("role-student").onclick = () => { roleModal.style.display = "none"; openStudentModal(); };
+  // Role modal buttons
+  document.getElementById("close-role").onclick = () => roleModal.style.display = "none";
+  document.getElementById("role-instructor").onclick = () => { roleModal.style.display = "none"; openInstructorModal(); };
+  document.getElementById("role-student").onclick = () => { roleModal.style.display = "none"; openStudentModal(); };
 
-// Instructor modal
-function openInstructorModal() {
-    instructorModal.style.display = "flex";
-    document.getElementById("password-section").style.display = "block";
-    document.getElementById("class-form-section").style.display = "none";
-}
-document.getElementById("close-instructor").onclick = () => instructorModal.style.display = "none";
+  // Instructor modal
+  function openInstructorModal() {
+      instructorModal.style.display = "flex";
+      document.getElementById("password-section").style.display = "block";
+      document.getElementById("class-form-section").style.display = "none";
+  }
+  document.getElementById("close-instructor").onclick = () => instructorModal.style.display = "none";
 
-document.getElementById("verify-password").onclick = () => {
-    if (document.getElementById("instructor-password").value === "wellness") {
-        document.getElementById("password-section").style.display = "none";
-        document.getElementById("class-form-section").style.display = "block";
-    } else {
-        alert("Incorrect password");
-    }
-};
+  document.getElementById("verify-password").onclick = () => {
+      if (document.getElementById("instructor-password").value === "wellness") {
+          document.getElementById("password-section").style.display = "none";
+          document.getElementById("class-form-section").style.display = "block";
+      } else {
+          alert("Incorrect password");
+      }
+  };
 
-document.getElementById("add-class").onclick = async () => {
-    const title = document.getElementById("class-title").value;
-    const start_time = document.getElementById("start-time").value;
-    const end_time = document.getElementById("end-time").value;
-    const capacity = parseInt(document.getElementById("capacity").value);
+  document.getElementById("add-class").onclick = async () => {
+      const title = document.getElementById("class-title").value;
+      const start_time = document.getElementById("start-time").value;
+      const end_time = document.getElementById("end-time").value;
+      const capacity = parseInt(document.getElementById("capacity").value);
 
-    const { error } = await supabase.from("classes").insert([{ title, instructor: "Instructor", start_time, end_time, capacity }]);
-    if (error) alert(error.message);
-    else {
-        alert("Class added!");
-        instructorSelectedDates.push(selectedDate);
-        renderCalendar(currentMonthOffset);
-    }
-    instructorModal.style.display = "none";
-};
+      const { error } = await supabase.from("classes").insert([{ title, instructor: "Instructor", start_time, end_time, capacity }]);
+      if (error) alert(error.message);
+      else {
+          alert("Class added!");
+          instructorSelectedDates.push(selectedDate);
+          renderCalendar(currentMonthOffset);
+      }
+      instructorModal.style.display = "none";
+  };
 
-// Student modal
-function openStudentModal() { studentModal.style.display = "flex"; loadStudentClasses(selectedDate); }
-document.getElementById("close-student").onclick = () => studentModal.style.display = "none";
+  // Student modal
+  function openStudentModal() { studentModal.style.display = "flex"; loadStudentClasses(selectedDate); }
+  document.getElementById("close-student").onclick = () => studentModal.style.display = "none";
 
-async function loadStudentClasses(date) {
-    const { data: classes, error } = await supabase.from("classes")
-        .select("*")
-        .gte("start_time", date + "T00:00")
-        .lte("end_time", date + "T23:59");
+  async function loadStudentClasses(date) {
+      const { data: classes, error } = await supabase.from("classes")
+          .select("*")
+          .gte("start_time", date + "T00:00")
+          .lte("end_time", date + "T23:59");
 
-    const listEl = document.getElementById("student-classes-list");
-    listEl.innerHTML = "";
-    if (error) { listEl.innerText = error.message; return; }
-    if (classes.length === 0) { listEl.innerText = "No classes for this day"; return; }
+      const listEl = document.getElementById("student-classes-list");
+      listEl.innerHTML = "";
+      if (error) { listEl.innerText = error.message; return; }
+      if (classes.length === 0) { listEl.innerText = "No classes for this day"; return; }
 
-    for (const c of classes) {
-        const div = document.createElement("div");
-        div.innerHTML = `<strong>${c.title}</strong> by ${c.instructor}<br>${new Date(c.start_time).toLocaleString()} - ${new Date(c.end_time).toLocaleString()} <button>Book</button>`;
-        div.querySelector("button").onclick = async () => {
-            const studentName = prompt("Enter your name to book this class:");
-            if (!studentName) return;
-            const { error } = await supabase.from("bookings").insert([{ class_id: c.id, student_name: studentName }]);
-            alert(error ? error.message : "Booked!");
-            loadStudentClasses(date);
-        };
-        listEl.appendChild(div);
-    }
-}
+      for (const c of classes) {
+          const div = document.createElement("div");
+          div.innerHTML = `<strong>${c.title}</strong> by ${c.instructor}<br>${new Date(c.start_time).toLocaleString()} - ${new Date(c.end_time).toLocaleString()} <button>Book</button>`;
+          div.querySelector("button").onclick = async () => {
+              const studentName = prompt("Enter your name to book this class:");
+              if (!studentName) return;
+              const { error } = await supabase.from("bookings").insert([{ class_id: c.id, student_name: studentName }]);
+              alert(error ? error.message : "Booked!");
+              loadStudentClasses(date);
+          };
+          listEl.appendChild(div);
+      }
+  }
 </script>
 </body>
 </html>

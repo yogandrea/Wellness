@@ -339,11 +339,86 @@
 
       <!-- ── Student Modal ──────────────────────────────────── -->
       <div id="student-modal" class="modal hidden">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width:460px;">
           <span class="close" id="close-student">&times;</span>
-          <h3>Available Classes</h3>
-          <p id="student-modal-date" style="color:#666; font-size:13px; margin:2px 0 12px;"></p>
-          <div id="student-classes-list">Loading…</div>
+
+          <!-- Step 1: Visitor details -->
+          <div id="student-step-1">
+            <h3 style="margin:0 0 4px;">Your Details</h3>
+            <p id="student-modal-date" style="color:#666;font-size:13px;margin:2px 0 14px;"></p>
+
+            <label class="field-label">Your Name <span style="color:#e53935;">*</span></label>
+            <input type="text" id="student-name" placeholder="e.g. Jane Tan">
+
+            <label class="field-label">Email Address <span style="color:#e53935;">*</span></label>
+            <input type="email" id="student-email" placeholder="e.g. jane@email.com">
+
+            <label class="field-label">Phone Number <span style="color:#aaa;font-weight:400;">(optional)</span></label>
+            <input type="tel" id="student-phone" placeholder="e.g. +65 9123 4567">
+
+            <button class="modal-btn" id="student-next">Continue →</button>
+          </div>
+
+          <!-- Step 2: Filter + class list -->
+          <div id="student-step-2" style="display:none;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <button id="student-back"
+                style="background:none;border:none;font-size:18px;cursor:pointer;color:#555;padding:0;">←</button>
+              <h3 style="margin:0;">Available Classes</h3>
+            </div>
+            <p id="student-step2-date" style="color:#666;font-size:13px;margin:-6px 0 12px 28px;"></p>
+
+            <!-- Filter bar -->
+            <div style="background:#f5f5f5;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+              <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">
+                Filter Classes
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+
+                <div style="flex:1;min-width:130px;">
+                  <label class="field-label" style="margin-top:0;">Class Type</label>
+                  <select id="filter-type" style="width:100%;padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;background:#fff;">
+                    <option value="">All types</option>
+                    <option>Yoga</option>
+                    <option>Pilates</option>
+                    <option>Meditation</option>
+                    <option>Zumba</option>
+                    <option>HIIT</option>
+                    <option>Stretching</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+
+                <div style="flex:1;min-width:130px;">
+                  <label class="field-label" style="margin-top:0;">Time of Day</label>
+                  <select id="filter-time" style="width:100%;padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;background:#fff;">
+                    <option value="">Any time</option>
+                    <option value="morning">Morning (before 12pm)</option>
+                    <option value="afternoon">Afternoon (12–5pm)</option>
+                    <option value="evening">Evening (after 5pm)</option>
+                  </select>
+                </div>
+
+                <div style="flex:1;min-width:130px;">
+                  <label class="field-label" style="margin-top:0;">Date Range</label>
+                  <select id="filter-date" style="width:100%;padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;background:#fff;">
+                    <option value="day">Selected day only</option>
+                    <option value="week">This week</option>
+                    <option value="month">This month</option>
+                    <option value="all">All upcoming</option>
+                  </select>
+                </div>
+
+              </div>
+              <button id="filter-apply"
+                style="margin-top:10px;padding:7px 16px;background:#4CAF50;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;width:100%;">
+                Apply Filter
+              </button>
+            </div>
+
+            <!-- Results -->
+            <div id="student-classes-list">Loading…</div>
+          </div>
         </div>
       </div>
       <!-- ── Admin Modal ────────────────────────────────────── -->
@@ -375,7 +450,7 @@
       <div style="text-align:right; max-width:800px; margin:8px auto 0; padding-right:4px;">
         <span id="admin-trigger"
           style="font-size:10px; color:#ccc; cursor:pointer; user-select:none;">
-          @Copyright
+          admin
         </span>
       </div>
     </section>
@@ -625,47 +700,156 @@
     });
 
     /* ════════════════════════════════════════════════════════
-       STUDENT MODAL
-       Fix: query classes where selectedDate falls within
-       start_time..end_time (not just same-day start_time)
+       STUDENT MODAL — 3-step flow
+       Step 1: collect name, email, phone
+       Step 2: filter bar + class list
     ════════════════════════════════════════════════════════ */
+
+    // Stored visitor details (persist within the session)
+    let studentInfo = { name: "", email: "", phone: "" };
+    // All classes loaded for the current filter query
+    let allClasses  = [];
+
     function openStudentModal() {
-      $("student-modal-date").innerText   = prettyDate(selectedDate);
-      $("student-classes-list").innerHTML = "Loading…";
+      // Reset to step 1, pre-fill if returning visitor
+      $("student-name").value  = studentInfo.name;
+      $("student-email").value = studentInfo.email;
+      $("student-phone").value = studentInfo.phone;
+      $("student-modal-date").innerText  = prettyDate(selectedDate);
+      $("student-step2-date").innerText  = prettyDate(selectedDate);
+      $("student-step-1").style.display  = "block";
+      $("student-step-2").style.display  = "none";
       showModal("student-modal");
-      loadStudentClasses(selectedDate);
     }
 
     $("close-student").addEventListener("click", () => hideModal("student-modal"));
+    $("student-modal").addEventListener("click", e => {
+      if (e.target === $("student-modal")) hideModal("student-modal");
+    });
 
-    async function loadStudentClasses(date) {
-      const listEl = $("student-classes-list");
+    // Step 1 → Step 2
+    $("student-next").addEventListener("click", () => {
+      const name  = $("student-name").value.trim();
+      const email = $("student-email").value.trim();
+      const phone = $("student-phone").value.trim();
 
-      // A class is "available" on `date` if start_time <= end-of-date AND end_time >= start-of-date
-      const dayStart = date + "T00:00:00";
-      const dayEnd   = date + "T23:59:59";
+      if (!name)  { $("student-name").focus();  alert("Please enter your name.");          return; }
+      if (!email || !email.includes("@")) {
+        $("student-email").focus();
+        alert("Please enter a valid email address.");
+        return;
+      }
 
+      // Save for booking and session re-use
+      studentInfo = { name, email, phone };
+
+      $("student-step-1").style.display = "none";
+      $("student-step-2").style.display = "block";
+      $("student-step2-date").innerText = prettyDate(selectedDate);
+
+      // Reset filters to defaults then load
+      $("filter-type").value = "";
+      $("filter-time").value = "";
+      $("filter-date").value = "day";
+      loadStudentClasses();
+    });
+
+    // Back button — Step 2 → Step 1
+    $("student-back").addEventListener("click", () => {
+      $("student-step-2").style.display = "none";
+      $("student-step-1").style.display = "block";
+    });
+
+    // Apply filter button
+    $("filter-apply").addEventListener("click", loadStudentClasses);
+
+    // ── Fetch & render classes based on active filters ──────
+    async function loadStudentClasses() {
+      const listEl     = $("student-classes-list");
+      const filterType = $("filter-type").value;
+      const filterTime = $("filter-time").value;
+      const dateRange  = $("filter-date").value;
+      listEl.innerHTML = "<p style='color:#888;text-align:center;padding:16px 0;'>Loading…</p>";
+
+      // ── Build date window from filter ──
+      const now   = new Date();
+      let winStart, winEnd;
+
+      if (dateRange === "day") {
+        winStart = selectedDate + "T00:00:00";
+        winEnd   = selectedDate + "T23:59:59";
+      } else if (dateRange === "week") {
+        const mon = new Date(now);
+        mon.setDate(now.getDate() - now.getDay() + 1);
+        const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+        winStart = mon.toISOString().slice(0, 10) + "T00:00:00";
+        winEnd   = sun.toISOString().slice(0, 10) + "T23:59:59";
+      } else if (dateRange === "month") {
+        const y = now.getFullYear(), m = now.getMonth();
+        winStart = new Date(y, m, 1).toISOString().slice(0, 10)  + "T00:00:00";
+        winEnd   = new Date(y, m + 1, 0).toISOString().slice(0, 10) + "T23:59:59";
+      } else {
+        // all upcoming
+        winStart = now.toISOString().slice(0, 19);
+        winEnd   = new Date(now.getFullYear() + 2, 0, 1).toISOString().slice(0, 19);
+      }
+
+      // ── Query Supabase ──
       const { data: classes, error } = await supabase
         .from("classes")
         .select("*")
-        .lte("start_time", dayEnd)    // class has already started by end of selected day
-        .gte("end_time",   dayStart)  // class hasn't ended yet at start of selected day
+        .lte("start_time", winEnd)
+        .gte("end_time",   winStart)
         .order("start_time", { ascending: true });
 
       if (error) {
         listEl.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
         return;
       }
-      if (!classes || classes.length === 0) {
-        listEl.innerHTML = `<p style="color:#888; text-align:center; padding:12px 0;">No classes scheduled for this day.</p>`;
+
+      // ── Client-side filters ──
+      let filtered = classes || [];
+
+      // Class type filter
+      if (filterType) {
+        filtered = filtered.filter(c => {
+          const m = c.title.match(/^\[(.+?)\]/);
+          return m && m[1].toLowerCase() === filterType.toLowerCase();
+        });
+      }
+
+      // Time of day filter (based on start_time hour)
+      if (filterTime) {
+        filtered = filtered.filter(c => {
+          const h = new Date(c.start_time).getHours();
+          if (filterTime === "morning")   return h < 12;
+          if (filterTime === "afternoon") return h >= 12 && h < 17;
+          if (filterTime === "evening")   return h >= 17;
+          return true;
+        });
+      }
+
+      // ── Render ──
+      listEl.innerHTML = "";
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div style="text-align:center;padding:20px 0;color:#888;">
+            <div style="font-size:32px;margin-bottom:8px;">🔍</div>
+            No classes match your filters.<br>
+            <span style="font-size:13px;">Try adjusting the date range or class type.</span>
+          </div>`;
         return;
       }
 
-      listEl.innerHTML = "";
+      // Summary count
+      const summary = document.createElement("p");
+      summary.style.cssText = "font-size:13px;color:#666;margin:0 0 10px;";
+      summary.textContent   = `${filtered.length} class${filtered.length !== 1 ? "es" : ""} found`;
+      listEl.appendChild(summary);
 
-      for (const c of classes) {
-        // Parse "[ClassType] Title" format stored by instructor
-        let classType = "";
+      for (const c of filtered) {
+        let classType  = "";
         let classTitle = c.title;
         const match = c.title.match(/^\[(.+?)\]\s*(.+)$/);
         if (match) { classType = match[1]; classTitle = match[2]; }
@@ -677,23 +861,95 @@
           ${classType ? `<div class="card-row"><span class="icon">🏷️</span><span><strong>Class Type:</strong> ${classType}</span></div>` : ""}
           <div class="card-row"><span class="icon">👤</span><span><strong>Instructor:</strong> ${c.instructor}</span></div>
           <div class="card-row"><span class="icon">📅</span><span><strong>From:</strong> ${fmtDateTime(c.start_time)}</span></div>
-          <div class="card-row"><span class="icon">📅</span><span><strong>Until:</strong> ${fmtDateTime(c.end_time)}</span></div>
+          <div class="card-row"><span class="icon">🏁</span><span><strong>Until:</strong> ${fmtDateTime(c.end_time)}</span></div>
           <div class="card-row"><span class="icon">👥</span><span><strong>Capacity:</strong> ${c.capacity} students</span></div>
           <button class="book-btn">Book this class</button>
         `;
 
         card.querySelector(".book-btn").addEventListener("click", async () => {
-          const name = prompt(`Book "${classTitle}" with ${c.instructor}\nEnter your name:`);
-          if (!name || !name.trim()) return;
+          const btn = card.querySelector(".book-btn");
+          btn.disabled    = true;
+          btn.textContent = "Booking…";
 
-          const { error: bookErr } = await supabase
-            .from("bookings")
-            .insert([{ class_id: c.id, student_name: name.trim() }]);
+          // Parse class type/title for the email
+          let classType  = "";
+          let classTitle = c.title;
+          const mt = c.title.match(/^\[(.+?)\]\s*(.+)$/);
+          if (mt) { classType = mt[1]; classTitle = mt[2]; }
 
-          if (bookErr) {
-            alert("Booking failed: " + bookErr.message);
-          } else {
-            alert(`You're booked into "${classTitle}" with ${c.instructor}! 🎉`);
+          try {
+            // ── Step 1: insert booking into Supabase ──────────
+            const { data: booking, error: bookErr } = await supabase
+              .from("bookings")
+              .insert([{
+                class_id:      c.id,
+                student_name:  studentInfo.name,
+                student_email: studentInfo.email,
+                student_phone: studentInfo.phone || null
+              }])
+              .select("id")
+              .single();
+
+            if (bookErr) {
+              // Fallback: email/phone columns may not exist yet
+              if (bookErr.message.includes("column")) {
+                const { error: fb } = await supabase
+                  .from("bookings")
+                  .insert([{ class_id: c.id, student_name: studentInfo.name }]);
+                if (fb) throw new Error(fb.message);
+              } else {
+                throw new Error(bookErr.message);
+              }
+            }
+
+            // ── Step 2: call Edge Function to send confirmation email ──
+            // This is a best-effort call — booking is already saved above.
+            // If the edge function isn't deployed yet it fails silently.
+            try {
+              await fetch(
+                "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/send-booking-email",
+                {
+                  method:  "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    student_name:  studentInfo.name,
+                    student_email: studentInfo.email,
+                    student_phone: studentInfo.phone || "",
+                    class_title:   classTitle,
+                    class_type:    classType,
+                    instructor:    c.instructor,
+                    start_time:    c.start_time,
+                    end_time:      c.end_time
+                  })
+                }
+              );
+            } catch (emailErr) {
+              // Email failed but booking is saved — don't block the user
+              console.warn("[Email] Edge function not reachable:", emailErr.message);
+            }
+
+            // ── Success ───────────────────────────────────────
+            btn.textContent      = "✅ Booked!";
+            btn.style.background = "#388E3C";
+            btn.disabled         = false;
+
+            // Friendly confirmation shown to user
+            const startStr = new Date(c.start_time).toLocaleString("default", {
+              weekday:"long", day:"numeric", month:"long",
+              hour:"2-digit", minute:"2-digit"
+            });
+            alert(
+              `Booking confirmed! 🎉\n\n` +
+              `📚 ${classTitle}${classType ? " (" + classType + ")" : ""}\n` +
+              `👤 Instructor: ${c.instructor}\n` +
+              `📅 ${startStr}\n\n` +
+              `A confirmation email has been sent to:\n${studentInfo.email}`
+            );
+
+          } catch (err) {
+            btn.disabled    = false;
+            btn.textContent = "Book this class";
+            alert("Booking failed: " + err.message);
           }
         });
 

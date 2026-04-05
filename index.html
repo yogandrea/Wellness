@@ -886,12 +886,15 @@
                 student_name:  studentInfo.name,
                 student_email: studentInfo.email,
                 student_phone: studentInfo.phone || null
-              }])
-              .select("id")
-              .single();
-
+             }]);
             if (bookErr) {
-              // Fallback: email/phone columns may not exist yet
+              if (bookErr.code === "23505" || bookErr.message.includes("duplicate") || bookErr.message.includes("bookings_class_email_unique")) {
+                btn.disabled = false;
+                btn.textContent = "Already Booked";
+                btn.style.background = "#FF9800";
+                alert("You're already registered for this class!\n\nEmail: " + studentInfo.email + "\n\nEach class can only be booked once per person.\nTo change your booking, please contact us directly.");
+                return;
+              }
               if (bookErr.message.includes("column")) {
                 const { error: fb } = await supabase
                   .from("bookings")

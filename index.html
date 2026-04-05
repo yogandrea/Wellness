@@ -61,7 +61,6 @@
     }
     .calendar-day:hover { background: #f0f0f0; }
 
-    /* Green = at least one class starts OR is ongoing this day */
     .calendar-day.has-class {
       background-color: #d4edda;
       font-weight: bold;
@@ -75,7 +74,6 @@
       background: none !important;
     }
 
-    /* tiny dot indicator */
     .calendar-day.has-class::after {
       content: "●";
       display: block;
@@ -105,10 +103,7 @@
       overflow-y: auto;
     }
 
-    .modal-content h3 {
-      margin: 0 0 6px;
-      font-size: 17px;
-    }
+    .modal-content h3 { margin: 0 0 6px; font-size: 17px; }
 
     .close {
       position: absolute; top: 12px; right: 16px;
@@ -116,124 +111,69 @@
     }
     .close:hover { color: #000; }
 
-    /* Role buttons */
-    .role-buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 14px;
-    }
+    .role-buttons { display: flex; gap: 12px; margin-top: 14px; }
     .role-buttons button {
-      flex: 1;
-      padding: 14px 8px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 15px;
-      border: none;
-      cursor: pointer;
+      flex: 1; padding: 14px 8px; border-radius: 8px;
+      font-weight: bold; font-size: 15px; border: none; cursor: pointer;
     }
     #role-instructor { background-color: #4CAF50; color: white; }
     #role-student    { background-color: #2196F3; color: white; }
     #role-instructor:hover, #role-student:hover { opacity: 0.85; }
 
-    /* Form field labels + inputs */
     .field-label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: #444;
-      margin: 10px 0 3px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      display: block; font-size: 12px; font-weight: 600;
+      color: #444; margin: 10px 0 3px;
+      text-transform: uppercase; letter-spacing: 0.4px;
     }
 
     .modal-content input[type="text"],
+    .modal-content input[type="email"],
+    .modal-content input[type="tel"],
     .modal-content input[type="password"],
     .modal-content input[type="number"],
+    .modal-content input[type="time"],
     .modal-content input[type="datetime-local"],
     .modal-content select {
-      display: block;
-      width: 100%;
-      padding: 9px 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-      box-sizing: border-box;
-      background: #fafafa;
+      display: block; width: 100%; padding: 9px 10px;
+      border: 1px solid #ccc; border-radius: 6px;
+      font-size: 14px; box-sizing: border-box; background: #fafafa;
     }
-    .modal-content input:focus,
-    .modal-content select:focus {
-      outline: none;
-      border-color: #4CAF50;
-      background: #fff;
+    .modal-content input:focus, .modal-content select:focus {
+      outline: none; border-color: #4CAF50; background: #fff;
     }
 
     .modal-btn {
-      width: 100%;
-      margin-top: 14px;
-      padding: 11px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 7px;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
+      width: 100%; margin-top: 14px; padding: 11px;
+      background: #4CAF50; color: white; border: none;
+      border-radius: 7px; font-size: 15px; font-weight: bold; cursor: pointer;
     }
     .modal-btn:hover { opacity: 0.87; }
     .modal-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
-    /* Student class cards */
     .class-card {
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 12px;
-      background: #fafffe;
+      border: 1px solid #e0e0e0; border-radius: 10px;
+      padding: 14px; margin-bottom: 12px; background: #fafffe;
     }
-    .class-card .card-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #222;
-      margin-bottom: 8px;
-    }
+    .class-card .card-title { font-size: 16px; font-weight: 700; color: #222; margin-bottom: 8px; }
     .class-card .card-row {
-      display: flex;
-      align-items: flex-start;
-      font-size: 13px;
-      color: #555;
-      margin-bottom: 4px;
-      gap: 6px;
+      display: flex; align-items: flex-start;
+      font-size: 13px; color: #555; margin-bottom: 4px; gap: 6px;
     }
     .class-card .card-row .icon { min-width: 18px; }
     .class-card .book-btn {
-      margin-top: 10px;
-      padding: 9px 18px;
-      background: #2196F3;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
+      margin-top: 10px; padding: 9px 18px; background: #2196F3;
+      color: white; border: none; border-radius: 6px;
+      font-weight: bold; cursor: pointer; font-size: 14px;
     }
     .class-card .book-btn:hover { opacity: 0.85; }
 
-    /* Legend */
     .calendar-legend {
-      max-width: 800px;
-      margin: 8px auto 0;
-      font-size: 12px;
-      color: #555;
-      display: flex;
-      gap: 16px;
-      padding: 0 4px;
+      max-width: 800px; margin: 8px auto 0;
+      font-size: 12px; color: #555; display: flex; gap: 16px; padding: 0 4px;
     }
     .legend-dot {
-      display: inline-block;
-      width: 12px; height: 12px;
-      border-radius: 3px;
-      margin-right: 4px;
-      vertical-align: middle;
+      display: inline-block; width: 12px; height: 12px;
+      border-radius: 3px; margin-right: 4px; vertical-align: middle;
     }
   </style>
 </head>
@@ -248,14 +188,11 @@
   </nav>
 
   <main class="home">
-    <!-- ── Montage (populated by main.js via media/media.json) ── -->
     <div id="montage-container" class="montage-container"></div>
 
-    <!-- Visitor Counter -->
     <div id="visitor-counter" style="text-align:center; margin-top:20px; font-size:18px;">🌍 Loading visitors...</div>
     <pre id="visitor-debug" style="text-align:center; margin-top:10px; color:red;"></pre>
 
-    <!-- ── Bookings Section ──────────────────────────────────── -->
     <section id="bookings">
       <h2 style="text-align:center;">Bookings</h2>
 
@@ -276,7 +213,7 @@
         <span><span class="legend-dot" style="background:#d4edda; border:1px solid #4CAF50;"></span>Class available — click to book</span>
       </div>
 
-      <!-- ── Role Modal ────────────────────────────────────── -->
+      <!-- Role Modal -->
       <div id="role-modal" class="modal hidden">
         <div class="modal-content">
           <span class="close" id="close-role">&times;</span>
@@ -289,22 +226,19 @@
         </div>
       </div>
 
-      <!-- ── Instructor Modal ───────────────────────────────── -->
+      <!-- Instructor Modal -->
       <div id="instructor-modal" class="modal hidden">
         <div class="modal-content">
           <span class="close" id="close-instructor">&times;</span>
           <h3>Add a Class</h3>
 
-          <!-- Step 1: password -->
           <div id="password-section">
             <label class="field-label">Instructor Password</label>
             <input type="password" id="instructor-password" placeholder="Enter password">
             <button class="modal-btn" id="verify-password">Verify ✓</button>
           </div>
 
-          <!-- Step 2: class form (shown after password OK) -->
           <div id="class-form-section" style="display:none;">
-
             <label class="field-label">Instructor Name</label>
             <input type="text" id="instructor-name" placeholder="e.g. Andrea Lim">
 
@@ -323,11 +257,26 @@
             <label class="field-label">Class Title / Description</label>
             <input type="text" id="class-title" placeholder="e.g. Morning Flow Yoga">
 
-            <label class="field-label">Class From (start date &amp; time)</label>
+            <label class="field-label">First Day (date &amp; start time)</label>
             <input type="datetime-local" id="start-time">
 
-            <label class="field-label">Class End (end date &amp; time)</label>
+            <label class="field-label">Last Day (date &amp; end time)</label>
             <input type="datetime-local" id="end-time">
+            <p style="font-size:11px;color:#888;margin:4px 0 0;line-height:1.5;background:#fff8e1;padding:6px 8px;border-radius:5px;border-left:3px solid #FFC107;">
+              📅 Each day in the range will be created as a <strong>separate bookable slot</strong>.
+              Students can book individual days independently.
+            </p>
+
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <div style="flex:1;">
+                <label class="field-label">Daily Start Time</label>
+                <input type="time" id="class-start-time" value="09:00">
+              </div>
+              <div style="flex:1;">
+                <label class="field-label">Daily End Time</label>
+                <input type="time" id="class-end-time" value="10:00">
+              </div>
+            </div>
 
             <label class="field-label">Capacity (max students)</label>
             <input type="number" id="capacity" value="10" min="1" max="200">
@@ -337,12 +286,11 @@
         </div>
       </div>
 
-      <!-- ── Student Modal ──────────────────────────────────── -->
+      <!-- Student Modal -->
       <div id="student-modal" class="modal hidden">
         <div class="modal-content" style="max-width:460px;">
           <span class="close" id="close-student">&times;</span>
 
-          <!-- Step 1: Visitor details -->
           <div id="student-step-1">
             <h3 style="margin:0 0 4px;">Your Details</h3>
             <p id="student-modal-date" style="color:#666;font-size:13px;margin:2px 0 14px;"></p>
@@ -359,7 +307,6 @@
             <button class="modal-btn" id="student-next">Continue →</button>
           </div>
 
-          <!-- Step 2: Filter + class list -->
           <div id="student-step-2" style="display:none;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
               <button id="student-back"
@@ -368,27 +315,19 @@
             </div>
             <p id="student-step2-date" style="color:#666;font-size:13px;margin:-6px 0 12px 28px;"></p>
 
-            <!-- Filter bar -->
             <div style="background:#f5f5f5;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
               <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">
                 Filter Classes
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:8px;">
-
                 <div style="flex:1;min-width:130px;">
                   <label class="field-label" style="margin-top:0;">Class Type</label>
                   <select id="filter-type" style="width:100%;padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;background:#fff;">
                     <option value="">All types</option>
-                    <option>Yoga</option>
-                    <option>Pilates</option>
-                    <option>Meditation</option>
-                    <option>Zumba</option>
-                    <option>HIIT</option>
-                    <option>Stretching</option>
-                    <option>Other</option>
+                    <option>Yoga</option><option>Pilates</option><option>Meditation</option>
+                    <option>Zumba</option><option>HIIT</option><option>Stretching</option><option>Other</option>
                   </select>
                 </div>
-
                 <div style="flex:1;min-width:130px;">
                   <label class="field-label" style="margin-top:0;">Time of Day</label>
                   <select id="filter-time" style="width:100%;padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;background:#fff;">
@@ -398,7 +337,6 @@
                     <option value="evening">Evening (after 5pm)</option>
                   </select>
                 </div>
-
                 <div style="flex:1;min-width:130px;">
                   <label class="field-label" style="margin-top:0;">Date Range</label>
                   <select id="filter-date" style="width:100%;padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;background:#fff;">
@@ -408,7 +346,6 @@
                     <option value="all">All upcoming</option>
                   </select>
                 </div>
-
               </div>
               <button id="filter-apply"
                 style="margin-top:10px;padding:7px 16px;background:#4CAF50;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;width:100%;">
@@ -416,27 +353,23 @@
               </button>
             </div>
 
-            <!-- Results -->
             <div id="student-classes-list">Loading…</div>
           </div>
         </div>
       </div>
-      <!-- ── Admin Modal ────────────────────────────────────── -->
+
+      <!-- Admin Modal -->
       <div id="admin-modal" class="modal hidden">
         <div class="modal-content" style="max-width:520px;">
           <span class="close" id="close-admin">&times;</span>
           <h3>Admin — Manage Classes</h3>
-
           <div id="admin-password-section">
             <label class="field-label">Admin Password</label>
             <input type="password" id="admin-password" placeholder="Enter admin password">
             <button class="modal-btn" id="admin-verify">Verify ✓</button>
           </div>
-
           <div id="admin-panel" style="display:none;">
-            <p style="font-size:13px;color:#666;margin:0 0 12px;">
-              Select classes to delete. This cannot be undone.
-            </p>
+            <p style="font-size:13px;color:#666;margin:0 0 12px;">Select classes to delete. This cannot be undone.</p>
             <div id="admin-classes-list">Loading…</div>
             <button class="modal-btn" id="admin-delete-selected"
               style="background:#e53935;margin-top:14px;display:none;">
@@ -448,16 +381,15 @@
 
       <!-- Inconspicuous admin trigger -->
       <div style="text-align:right; max-width:800px; margin:8px auto 0; padding-right:4px;">
-        <span id="admin-trigger"
-          style="font-size:10px; color:#ccc; cursor:pointer; user-select:none;">
-          admin
+        <span id="admin-trigger" style="font-size:10px; color:#ccc; cursor:pointer; user-select:none;">
+          2026@Copyright
         </span>
       </div>
     </section>
   </main>
 
-  <!-- main.js handles montage + services page logic -->
   <script src="js/main.js"></script>
+  <script type="module" src="js/booking.js"></script>
 
   <!-- Visitor Counter -->
   <script>
@@ -483,30 +415,28 @@
     })();
   </script>
 
-  <!-- ══════════════════════════════════════════════════════════
-       BOOKINGS + CALENDAR  —  single <script type="module">
-       All calendar, modal, Supabase logic lives here only.
-  ══════════════════════════════════════════════════════════ -->
   <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/+esm";
 
-    /* ── Supabase ───────────────────────────────────────────── */
     const supabase = createClient(
       "https://utpwbrbpdyrwqlheaknm.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U"
     );
 
-    /* ── State ──────────────────────────────────────────────── */
-    let monthOffset  = 0;   // 0 = current month
-    let selectedDate = "";  // "YYYY-MM-DD"
+    // ── EmailJS config ── replace these 3 values ─────────────
+   const EMAILJS_SERVICE_ID  = "service_6ptnn6y";   // e.g. "service_abc123"
+    const EMAILJS_TEMPLATE_ID = "template_ii0iyl7";  // e.g. "template_xyz789"
+    const EMAILJS_PUBLIC_KEY  = "IAT9RRoctOp4m";   // e.g. "AbCdEfGhIjKlMnOpQ"
+    const ADMIN_EMAIL         = "mailtsjp@gmail.com";
+    // ─────────────────────────────────────────────────────────
 
-    /* ── Helpers ────────────────────────────────────────────── */
+    let monthOffset  = 0;
+    let selectedDate = "";
+
     const $ = id => document.getElementById(id);
-
     function showModal(id) { $(id).classList.remove("hidden"); }
     function hideModal(id) { $(id).classList.add("hidden"); }
 
-    // Click backdrop to close
     ["role-modal", "instructor-modal", "student-modal"].forEach(id => {
       $(id).addEventListener("click", e => { if (e.target === $(id)) hideModal(id); });
     });
@@ -518,10 +448,6 @@
       });
     }
 
-    function fmtTime(isoStr) {
-      return new Date(isoStr).toLocaleTimeString("default", { hour: "2-digit", minute: "2-digit" });
-    }
-
     function fmtDateTime(isoStr) {
       return new Date(isoStr).toLocaleString("default", {
         weekday: "short", day: "numeric", month: "short", year: "numeric",
@@ -529,12 +455,7 @@
       });
     }
 
-    /* ════════════════════════════════════════════════════════
-       CALENDAR
-       Key fix: highlight every day that falls within ANY
-       class's start_time..end_time range, not just the
-       start day.
-    ════════════════════════════════════════════════════════ */
+    /* ── Calendar ────────────────────────────────────────── */
     async function renderCalendar() {
       const container  = $("calendar-container");
       const monthLabel = $("calendar-month");
@@ -542,72 +463,49 @@
       const base  = new Date();
       const first = new Date(base.getFullYear(), base.getMonth() + monthOffset, 1);
       const last  = new Date(base.getFullYear(), base.getMonth() + monthOffset + 1, 0);
-
       const daysInMonth = last.getDate();
       const startCol    = first.getDay();
 
       monthLabel.innerText = first.toLocaleString("default", { month: "long", year: "numeric" });
 
-      // ── Fetch all classes that OVERLAP this calendar month ──
-      // A class overlaps the month if:  start_time <= monthEnd  AND  end_time >= monthStart
       const monthStart = new Date(first.getFullYear(), first.getMonth(), 1, 0, 0, 0).toISOString();
-      const monthEnd   = new Date(last.getFullYear(),  last.getMonth(),  last.getDate(), 23, 59, 59).toISOString();
+      const monthEnd   = new Date(last.getFullYear(), last.getMonth(), last.getDate(), 23, 59, 59).toISOString();
 
-      const classDays = new Set();   // day-of-month numbers that have a class
+      const classDays = new Set();
       try {
         const { data, error } = await supabase
-          .from("classes")
-          .select("start_time, end_time")
-          .lte("start_time", monthEnd)     // class starts before or during this month
-          .gte("end_time",   monthStart);  // class ends after or during this month
+          .from("classes").select("start_time, end_time")
+          .lte("start_time", monthEnd).gte("end_time", monthStart);
 
         if (!error && data) {
           data.forEach(c => {
-            // Mark every calendar day that falls within [start_time, end_time]
             const classStart = new Date(c.start_time);
             const classEnd   = new Date(c.end_time);
-
             for (let d = 1; d <= daysInMonth; d++) {
               const dayStart = new Date(first.getFullYear(), first.getMonth(), d, 0, 0, 0);
               const dayEnd   = new Date(first.getFullYear(), first.getMonth(), d, 23, 59, 59);
-
-              // Day overlaps with class if dayStart <= classEnd AND dayEnd >= classStart
-              if (dayStart <= classEnd && dayEnd >= classStart) {
-                classDays.add(d);
-              }
+              if (dayStart <= classEnd && dayEnd >= classStart) classDays.add(d);
             }
           });
         }
-      } catch (_) { /* render without highlights if fetch fails */ }
+      } catch (_) {}
 
-      /* ── Build grid ── */
       container.innerHTML = "";
-
-      // Blank leading cells
       for (let i = 0; i < startCol; i++) {
         const blank = document.createElement("div");
         blank.className = "calendar-day empty";
         container.appendChild(blank);
       }
-
-      // Day cells
       for (let d = 1; d <= daysInMonth; d++) {
         const cell = document.createElement("div");
-        const hasClass = classDays.has(d);
-        cell.className = "calendar-day" + (hasClass ? " has-class" : "");
+        cell.className = "calendar-day" + (classDays.has(d) ? " has-class" : "");
         cell.textContent = d;
-
-        const yy = String(first.getFullYear());
-        const mm = String(first.getMonth() + 1).padStart(2, "0");
-        const dd = String(d).padStart(2, "0");
-        const dateStr = `${yy}-${mm}-${dd}`;
-
+        const dateStr = `${first.getFullYear()}-${String(first.getMonth()+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
         cell.addEventListener("click", () => {
           selectedDate = dateStr;
           $("role-modal-date").innerText = prettyDate(dateStr);
           showModal("role-modal");
         });
-
         container.appendChild(cell);
       }
     }
@@ -615,30 +513,25 @@
     $("prev-month").addEventListener("click", () => { monthOffset--; renderCalendar(); });
     $("next-month").addEventListener("click", () => { monthOffset++; renderCalendar(); });
 
-    /* ════════════════════════════════════════════════════════
-       ROLE MODAL
-    ════════════════════════════════════════════════════════ */
+    /* ── Role Modal ──────────────────────────────────────── */
     $("close-role").addEventListener("click",      () => hideModal("role-modal"));
     $("role-instructor").addEventListener("click", () => { hideModal("role-modal"); openInstructorModal(); });
     $("role-student").addEventListener("click",    () => { hideModal("role-modal"); openStudentModal(); });
 
-    /* ════════════════════════════════════════════════════════
-       INSTRUCTOR MODAL
-    ════════════════════════════════════════════════════════ */
+    /* ── Instructor Modal ────────────────────────────────── */
     function openInstructorModal() {
-      // Reset all fields
-      $("instructor-password").value  = "";
-      $("instructor-name").value      = "";
-      $("class-type").value           = "";
-      $("class-title").value          = "";
-      $("capacity").value             = "10";
+      $("instructor-password").value         = "";
+      $("instructor-name").value             = "";
+      $("class-type").value                  = "";
+      $("class-title").value                 = "";
+      $("capacity").value                    = "10";
       $("password-section").style.display    = "block";
       $("class-form-section").style.display  = "none";
-
-      // Pre-fill dates from the clicked calendar day
       if (selectedDate) {
-        $("start-time").value = selectedDate + "T09:00";
-        $("end-time").value   = selectedDate + "T10:00";
+        $("start-time").value       = selectedDate + "T09:00";
+        $("end-time").value         = selectedDate + "T10:00";
+        $("class-start-time").value = "09:00";
+        $("class-end-time").value   = "10:00";
       }
       showModal("instructor-modal");
     }
@@ -662,59 +555,72 @@
       const instructorName = $("instructor-name").value.trim();
       const classType      = $("class-type").value;
       const title          = $("class-title").value.trim();
-      const start_time     = $("start-time").value;
-      const end_time       = $("end-time").value;
+      const startDateVal   = $("start-time").value;
+      const endDateVal     = $("end-time").value;
+      const dailyStart     = $("class-start-time").value || "09:00";
+      const dailyEnd       = $("class-end-time").value   || "10:00";
       const capacity       = parseInt($("capacity").value, 10) || 10;
 
-      if (!instructorName)         { alert("Please enter the instructor name.");    return; }
-      if (!classType)              { alert("Please select a class type.");          return; }
-      if (!title)                  { alert("Please enter a class title.");          return; }
-      if (!start_time)             { alert("Please set a start date & time.");      return; }
-      if (!end_time)               { alert("Please set an end date & time.");       return; }
-      if (end_time <= start_time)  { alert("End must be after start.");             return; }
+      if (!instructorName) { alert("Please enter the instructor name.");  return; }
+      if (!classType)      { alert("Please select a class type.");        return; }
+      if (!title)          { alert("Please enter a class title.");        return; }
+      if (!startDateVal)   { alert("Please set a first day.");            return; }
+      if (!endDateVal)     { alert("Please set a last day.");             return; }
+      if (endDateVal < startDateVal)  { alert("Last day must be on or after first day."); return; }
+      if (dailyEnd <= dailyStart)     { alert("Daily end time must be after start time."); return; }
+
+      const startDate = new Date(startDateVal.slice(0,10) + "T00:00:00");
+      const endDate   = new Date(endDateVal.slice(0,10)   + "T00:00:00");
+      const rows = [];
+      const cur   = new Date(startDate);
+      while (cur <= endDate) {
+        const ymd = cur.toISOString().slice(0,10);
+        rows.push({
+          title:      `[${classType}] ${title}`,
+          instructor: instructorName,
+          start_time: `${ymd}T${dailyStart}:00`,
+          end_time:   `${ymd}T${dailyEnd}:00`,
+          capacity
+        });
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      if (rows.length > 1) {
+        const ok = confirm(
+          `This will create ${rows.length} separate daily slots\n` +
+          `(${startDate.toDateString()} → ${endDate.toDateString()})\n` +
+          `each from ${dailyStart} to ${dailyEnd}.\n\nContinue?`
+        );
+        if (!ok) return;
+      }
 
       const btn = $("add-class");
       btn.disabled    = true;
-      btn.textContent = "Saving…";
+      btn.textContent = `Saving ${rows.length} slot${rows.length > 1 ? "s" : ""}…`;
 
-      // Store class_type in the title column as "Type: Title" OR use a separate column.
-      // Here we pass instructor name via the `instructor` column and class_type in title.
-      const { error } = await supabase.from("classes").insert([{
-        title:      `[${classType}] ${title}`,
-        instructor: instructorName,
-        start_time,
-        end_time,
-        capacity
-      }]);
-
+      const { error } = await supabase.from("classes").insert(rows);
       btn.disabled    = false;
       btn.textContent = "✓ Add Class";
 
       if (error) {
         alert("Error saving class: " + error.message);
       } else {
-        alert(`"${title}" added successfully! ✅`);
+        alert(rows.length === 1
+          ? `"${title}" added for ${startDate.toDateString()}! ✅`
+          : `${rows.length} daily slots added for "${title}"!\n${startDate.toDateString()} → ${endDate.toDateString()} ✅`
+        );
         hideModal("instructor-modal");
         renderCalendar();
       }
     });
 
-    /* ════════════════════════════════════════════════════════
-       STUDENT MODAL — 3-step flow
-       Step 1: collect name, email, phone
-       Step 2: filter bar + class list
-    ════════════════════════════════════════════════════════ */
-
-    // Stored visitor details (persist within the session)
+    /* ── Student Modal ───────────────────────────────────── */
     let studentInfo = { name: "", email: "", phone: "" };
-    // All classes loaded for the current filter query
-    let allClasses  = [];
 
     function openStudentModal() {
-      // Reset to step 1, pre-fill if returning visitor
-      $("student-name").value  = studentInfo.name;
-      $("student-email").value = studentInfo.email;
-      $("student-phone").value = studentInfo.phone;
+      $("student-name").value            = studentInfo.name;
+      $("student-email").value           = studentInfo.email;
+      $("student-phone").value           = studentInfo.phone;
       $("student-modal-date").innerText  = prettyDate(selectedDate);
       $("student-step2-date").innerText  = prettyDate(selectedDate);
       $("student-step-1").style.display  = "block";
@@ -723,47 +629,31 @@
     }
 
     $("close-student").addEventListener("click", () => hideModal("student-modal"));
-    $("student-modal").addEventListener("click", e => {
-      if (e.target === $("student-modal")) hideModal("student-modal");
-    });
+    $("student-modal").addEventListener("click", e => { if (e.target === $("student-modal")) hideModal("student-modal"); });
 
-    // Step 1 → Step 2
     $("student-next").addEventListener("click", () => {
       const name  = $("student-name").value.trim();
       const email = $("student-email").value.trim();
       const phone = $("student-phone").value.trim();
-
-      if (!name)  { $("student-name").focus();  alert("Please enter your name.");          return; }
-      if (!email || !email.includes("@")) {
-        $("student-email").focus();
-        alert("Please enter a valid email address.");
-        return;
-      }
-
-      // Save for booking and session re-use
+      if (!name)                        { $("student-name").focus();  alert("Please enter your name.");          return; }
+      if (!email || !email.includes("@")) { $("student-email").focus(); alert("Please enter a valid email address."); return; }
       studentInfo = { name, email, phone };
-
       $("student-step-1").style.display = "none";
       $("student-step-2").style.display = "block";
       $("student-step2-date").innerText = prettyDate(selectedDate);
-
-      // Reset filters to defaults then load
       $("filter-type").value = "";
       $("filter-time").value = "";
       $("filter-date").value = "day";
       loadStudentClasses();
     });
 
-    // Back button — Step 2 → Step 1
     $("student-back").addEventListener("click", () => {
       $("student-step-2").style.display = "none";
       $("student-step-1").style.display = "block";
     });
 
-    // Apply filter button
     $("filter-apply").addEventListener("click", loadStudentClasses);
 
-    // ── Fetch & render classes based on active filters ──────
     async function loadStudentClasses() {
       const listEl     = $("student-classes-list");
       const filterType = $("filter-type").value;
@@ -771,86 +661,62 @@
       const dateRange  = $("filter-date").value;
       listEl.innerHTML = "<p style='color:#888;text-align:center;padding:16px 0;'>Loading…</p>";
 
-      // ── Build date window from filter ──
-      const now   = new Date();
+      const now = new Date();
       let winStart, winEnd;
-
       if (dateRange === "day") {
         winStart = selectedDate + "T00:00:00";
         winEnd   = selectedDate + "T23:59:59";
       } else if (dateRange === "week") {
-        const mon = new Date(now);
-        mon.setDate(now.getDate() - now.getDay() + 1);
+        const mon = new Date(now); mon.setDate(now.getDate() - now.getDay() + 1);
         const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-        winStart = mon.toISOString().slice(0, 10) + "T00:00:00";
-        winEnd   = sun.toISOString().slice(0, 10) + "T23:59:59";
+        winStart = mon.toISOString().slice(0,10) + "T00:00:00";
+        winEnd   = sun.toISOString().slice(0,10) + "T23:59:59";
       } else if (dateRange === "month") {
         const y = now.getFullYear(), m = now.getMonth();
-        winStart = new Date(y, m, 1).toISOString().slice(0, 10)  + "T00:00:00";
-        winEnd   = new Date(y, m + 1, 0).toISOString().slice(0, 10) + "T23:59:59";
+        winStart = new Date(y,m,1).toISOString().slice(0,10)   + "T00:00:00";
+        winEnd   = new Date(y,m+1,0).toISOString().slice(0,10) + "T23:59:59";
       } else {
-        // all upcoming
-        winStart = now.toISOString().slice(0, 19);
-        winEnd   = new Date(now.getFullYear() + 2, 0, 1).toISOString().slice(0, 19);
+        winStart = now.toISOString().slice(0,19);
+        winEnd   = new Date(now.getFullYear()+2,0,1).toISOString().slice(0,19);
       }
 
-      // ── Query Supabase ──
       const { data: classes, error } = await supabase
-        .from("classes")
-        .select("*")
-        .lte("start_time", winEnd)
-        .gte("end_time",   winStart)
+        .from("classes").select("*")
+        .lte("start_time", winEnd).gte("end_time", winStart)
         .order("start_time", { ascending: true });
 
-      if (error) {
-        listEl.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-        return;
-      }
+      if (error) { listEl.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`; return; }
 
-      // ── Client-side filters ──
       let filtered = classes || [];
+      if (filterType) filtered = filtered.filter(c => {
+        const m = c.title.match(/^\[(.+?)\]/);
+        return m && m[1].toLowerCase() === filterType.toLowerCase();
+      });
+      if (filterTime) filtered = filtered.filter(c => {
+        const h = new Date(c.start_time).getHours();
+        if (filterTime === "morning")   return h < 12;
+        if (filterTime === "afternoon") return h >= 12 && h < 17;
+        if (filterTime === "evening")   return h >= 17;
+        return true;
+      });
 
-      // Class type filter
-      if (filterType) {
-        filtered = filtered.filter(c => {
-          const m = c.title.match(/^\[(.+?)\]/);
-          return m && m[1].toLowerCase() === filterType.toLowerCase();
-        });
-      }
-
-      // Time of day filter (based on start_time hour)
-      if (filterTime) {
-        filtered = filtered.filter(c => {
-          const h = new Date(c.start_time).getHours();
-          if (filterTime === "morning")   return h < 12;
-          if (filterTime === "afternoon") return h >= 12 && h < 17;
-          if (filterTime === "evening")   return h >= 17;
-          return true;
-        });
-      }
-
-      // ── Render ──
       listEl.innerHTML = "";
-
       if (filtered.length === 0) {
-        listEl.innerHTML = `
-          <div style="text-align:center;padding:20px 0;color:#888;">
-            <div style="font-size:32px;margin-bottom:8px;">🔍</div>
-            No classes match your filters.<br>
-            <span style="font-size:13px;">Try adjusting the date range or class type.</span>
-          </div>`;
+        listEl.innerHTML = `<div style="text-align:center;padding:20px 0;color:#888;">
+          <div style="font-size:32px;margin-bottom:8px;">🔍</div>
+          No classes match your filters.<br>
+          <span style="font-size:13px;">Try adjusting the date range or class type.</span>
+        </div>`;
         return;
       }
 
-      // Summary count
       const summary = document.createElement("p");
       summary.style.cssText = "font-size:13px;color:#666;margin:0 0 10px;";
       summary.textContent   = `${filtered.length} class${filtered.length !== 1 ? "es" : ""} found`;
       listEl.appendChild(summary);
 
       for (const c of filtered) {
-        let classType  = "";
-        let classTitle = c.title;
+        let classType = "", classTitle = c.title;
         const match = c.title.match(/^\[(.+?)\]\s*(.+)$/);
         if (match) { classType = match[1]; classTitle = match[2]; }
 
@@ -868,94 +734,20 @@
 
         card.querySelector(".book-btn").addEventListener("click", async () => {
           const btn = card.querySelector(".book-btn");
-          btn.disabled    = true;
-          btn.textContent = "Booking…";
-
-          // Parse class type/title for the email
-          let classType  = "";
-          let classTitle = c.title;
-          const mt = c.title.match(/^\[(.+?)\]\s*(.+)$/);
-          if (mt) { classType = mt[1]; classTitle = mt[2]; }
-
-          try {
-            // ── Step 1: insert booking into Supabase ──────────
-            const { data: booking, error: bookErr } = await supabase
-              .from("bookings")
-              .insert([{
-                class_id:      c.id,
-                student_name:  studentInfo.name,
-                student_email: studentInfo.email,
-                student_phone: studentInfo.phone || null
-             }]);
-            if (bookErr) {
-              if (bookErr.code === "23505" || bookErr.message.includes("duplicate") || bookErr.message.includes("bookings_class_email_unique")) {
-                btn.disabled = false;
-                btn.textContent = "Already Booked";
-                btn.style.background = "#FF9800";
-                alert("You're already registered for this class!\n\nEmail: " + studentInfo.email + "\n\nEach class can only be booked once per person.\nTo change your booking, please contact us directly.");
-                return;
-              }
-              if (bookErr.message.includes("column")) {
-                const { error: fb } = await supabase
-                  .from("bookings")
-                  .insert([{ class_id: c.id, student_name: studentInfo.name }]);
-                if (fb) throw new Error(fb.message);
-              } else {
-                throw new Error(bookErr.message);
-              }
-            }
-
-            // ── Step 2: call Edge Function to send confirmation email ──
-            // This is a best-effort call — booking is already saved above.
-            // If the edge function isn't deployed yet it fails silently.
-            try {
-              await fetch(
-                "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/super-worker",
-                {
-                  method:  "POST",
-                  headers: {
-                    "Content-Type":  "application/json",
-                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U",
-                  },
-                  body: JSON.stringify({
-                    student_name:  studentInfo.name,
-                    student_email: studentInfo.email,
-                    student_phone: studentInfo.phone || "",
-                    class_title:   classTitle,
-                    class_type:    classType,
-                    instructor:    c.instructor,
-                    start_time:    c.start_time,
-                    end_time:      c.end_time
-                  })
-                }
-              );
-            } catch (emailErr) {
-              // Email failed but booking is saved — don't block the user
-              console.warn("[Email] Edge function not reachable:", emailErr.message);
-            }
-
-            // ── Success ───────────────────────────────────────
-            btn.textContent      = "✅ Booked!";
-            btn.style.background = "#388E3C";
-            btn.disabled         = false;
-
-            // Friendly confirmation shown to user
-            const startStr = new Date(c.start_time).toLocaleString("default", {
-              weekday:"long", day:"numeric", month:"long",
-              hour:"2-digit", minute:"2-digit"
+          // Call booking.js which has the latest duplicate-check logic
+          if (typeof window.bookClass === "function") {
+            await window.bookClass({
+              classId:     c.id,
+              classTitle:  classTitle,
+              classType:   classType,
+              classStart:  c.start_time,
+              classEnd:    c.end_time,
+              instructor:  c.instructor,
+              studentInfo: studentInfo,
+              btn:         btn,
             });
-            alert(
-              `Booking confirmed! 🎉\n\n` +
-              `📚 ${classTitle}${classType ? " (" + classType + ")" : ""}\n` +
-              `👤 Instructor: ${c.instructor}\n` +
-              `📅 ${startStr}\n\n` +
-              `A confirmation email has been sent to:\n${studentInfo.email}`
-            );
-
-          } catch (err) {
-            btn.disabled    = false;
-            btn.textContent = "Book this class";
-            alert("Booking failed: " + err.message);
+          } else {
+            alert("Booking system still loading — please try again in a moment.");
           }
         });
 
@@ -963,26 +755,19 @@
       }
     }
 
-    /* ── Initial render ─────────────────────────────────────── */
+    /* ── Initial render ──────────────────────────────────── */
     renderCalendar();
 
-    /* ════════════════════════════════════════════════════════
-       ADMIN PANEL — delete classes
-       Triggered by tiny "admin" text at bottom of calendar.
-       Password: "boss"
-    ════════════════════════════════════════════════════════ */
+    /* ── Admin Panel ─────────────────────────────────────── */
     $("admin-trigger").addEventListener("click", () => {
-      // Reset to password step each time
-      $("admin-password").value             = "";
+      $("admin-password").value                 = "";
       $("admin-password-section").style.display = "block";
       $("admin-panel").style.display            = "none";
       showModal("admin-modal");
     });
 
     $("close-admin").addEventListener("click", () => hideModal("admin-modal"));
-    $("admin-modal").addEventListener("click", e => {
-      if (e.target === $("admin-modal")) hideModal("admin-modal");
-    });
+    $("admin-modal").addEventListener("click", e => { if (e.target === $("admin-modal")) hideModal("admin-modal"); });
 
     function verifyAdmin() {
       if ($("admin-password").value === "boss") {
@@ -999,34 +784,28 @@
     $("admin-password").addEventListener("keydown", e => { if (e.key === "Enter") verifyAdmin(); });
 
     async function loadAdminClasses() {
-      const listEl  = $("admin-classes-list");
-      const delBtn  = $("admin-delete-selected");
-      listEl.innerHTML = "Loading…";
+      const listEl = $("admin-classes-list");
+      const delBtn = $("admin-delete-selected");
+      listEl.innerHTML     = "Loading…";
       delBtn.style.display = "none";
 
       const { data: classes, error } = await supabase
-        .from("classes")
-        .select("id, title, instructor, start_time, end_time")
+        .from("classes").select("id, title, instructor, start_time, end_time")
         .order("start_time", { ascending: true });
 
       if (error) { listEl.innerHTML = `<p style="color:red;">${error.message}</p>`; return; }
-      if (!classes || classes.length === 0) {
-        listEl.innerHTML = `<p style="color:#888;">No classes found.</p>`;
-        return;
-      }
+      if (!classes || classes.length === 0) { listEl.innerHTML = `<p style="color:#888;">No classes found.</p>`; return; }
 
-      listEl.innerHTML = "";
+      listEl.innerHTML     = "";
       delBtn.style.display = "block";
 
       classes.forEach(c => {
-        // Parse "[Type] Title" format
         let label = c.title;
         const m = c.title.match(/^\[(.+?)\]\s*(.+)$/);
         if (m) label = `[${m[1]}] ${m[2]}`;
 
         const start = new Date(c.start_time).toLocaleString("default", {
-          day: "numeric", month: "short", year: "numeric",
-          hour: "2-digit", minute: "2-digit"
+          day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"
         });
 
         const row = document.createElement("div");
@@ -1048,8 +827,7 @@
       const checked = [...document.querySelectorAll("#admin-classes-list input[type=checkbox]:checked")];
       if (checked.length === 0) { alert("No classes selected."); return; }
 
-      const confirmMsg = `Delete ${checked.length} class${checked.length > 1 ? "es" : ""}?\nThis also removes all student bookings for these classes.\nThis cannot be undone.`;
-      if (!confirm(confirmMsg)) return;
+      if (!confirm(`Delete ${checked.length} class${checked.length > 1 ? "es" : ""}?\nThis also removes all student bookings.\nThis cannot be undone.`)) return;
 
       const ids = checked.map(cb => cb.dataset.id);
       const btn = $("admin-delete-selected");
@@ -1057,45 +835,21 @@
       btn.textContent = "Deleting…";
 
       try {
-        // Step 1: delete linked bookings first
-        const { error: bookErr } = await supabase
-          .from("bookings")
-          .delete()
-          .in("class_id", ids);
+        await supabase.from("bookings").delete().in("class_id", ids);
 
-        if (bookErr) {
-          console.warn("Booking delete error (may be OK if none exist):", bookErr.message);
-        }
-
-        // Step 2: delete the classes — use .select() to get back deleted rows
-        // so we can confirm Supabase actually deleted them (RLS check)
         const { data: deleted, error: classErr } = await supabase
-          .from("classes")
-          .delete()
-          .in("id", ids)
-          .select("id");  // returns deleted rows — empty if RLS blocked it
+          .from("classes").delete().in("id", ids).select("id");
 
-        if (classErr) {
-          alert("Delete failed: " + classErr.message);
-          return;
-        }
+        if (classErr) { alert("Delete failed: " + classErr.message); return; }
 
         if (!deleted || deleted.length === 0) {
-          alert(
-            "⚠️ Supabase RLS is blocking deletes.\n\n" +
-            "One-time fix — run this SQL in your Supabase dashboard:\n" +
-            "Go to: SQL Editor → New Query → paste and Run:\n\n" +
-            "ALTER TABLE classes DISABLE ROW LEVEL SECURITY;\n" +
-            "ALTER TABLE bookings DISABLE ROW LEVEL SECURITY;\n\n" +
-            "This only needs to be done once."
-          );
+          alert("⚠️ Supabase RLS is blocking deletes.\n\nRun this SQL once in Supabase → SQL Editor:\n\nALTER TABLE classes DISABLE ROW LEVEL SECURITY;\nALTER TABLE bookings DISABLE ROW LEVEL SECURITY;");
           return;
         }
 
         alert(`${deleted.length} class${deleted.length > 1 ? "es" : ""} deleted. ✅`);
         await loadAdminClasses();
         renderCalendar();
-
       } finally {
         btn.disabled    = false;
         btn.textContent = "🗑 Delete Selected Classes";

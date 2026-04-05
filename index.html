@@ -820,11 +820,12 @@
 
         if (!deleted || deleted.length === 0) {
           alert(
-            "⚠️ Delete was blocked by Supabase Row Level Security (RLS).\n\n" +
-            "To fix this, go to your Supabase dashboard:\n" +
-            "Table Editor → classes → Policies\n" +
-            "→ Add a policy: allow DELETE for role 'anon'\n\n" +
-            "Or temporarily disable RLS on the 'classes' table."
+            "⚠️ Supabase RLS is blocking deletes.\n\n" +
+            "One-time fix — run this SQL in your Supabase dashboard:\n" +
+            "Go to: SQL Editor → New Query → paste and Run:\n\n" +
+            "ALTER TABLE classes DISABLE ROW LEVEL SECURITY;\n" +
+            "ALTER TABLE bookings DISABLE ROW LEVEL SECURITY;\n\n" +
+            "This only needs to be done once."
           );
           return;
         }

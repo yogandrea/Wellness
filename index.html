@@ -34,18 +34,11 @@ async function loadVisitors() {
 
   try {
     const res = await fetch(
-      "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
-      {
-        headers: {
-          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U"
-        }
-      }
+      "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track"
     );
 
     const data = await res.json();
-
     counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
-
   } catch (err) {
     console.error(err);
     counterEl.innerText = "🌍 Visitors unavailable";

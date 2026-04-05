@@ -7,27 +7,155 @@
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* Bookings Calendar Styles */
-    #bookings { padding:20px; margin-top:50px; }
-    #calendar-header { display:flex; justify-content: space-between; align-items:center; max-width:800px; margin:10px auto; }
-    #calendar-container { display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; max-width:800px; margin:auto; }
-    .calendar-day { border:1px solid #ccc; padding:10px; text-align:center; cursor:pointer; border-radius:5px; min-height:50px; }
-    .calendar-day:hover { background:#f0f0f0; }
-    .calendar-day.has-class { background-color:#d4edda; font-weight:bold; } /* Light green for classes */
-    .calendar-day.selected-range { background-color:#add8e6; } /* Blue for selected range */
+    /* ── Calendar ─────────────────────────────────────────── */
+    #bookings { padding: 20px; margin-top: 50px; }
 
-    /* Modal Styles */
-    .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000; }
-    .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:400px; position:relative; }
-    .close { position:absolute; top:10px; right:10px; cursor:pointer; font-size:20px; font-weight:bold; }
-    form input, form button { margin:5px 0; padding:8px; width:100%; }
-    button { cursor:pointer; border:none; border-radius:5px; font-weight:bold; }
+    #calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 800px;
+      margin: 10px auto;
+    }
 
-    /* Role modal buttons */
-    #role-modal button { width:45%; margin:5px; padding:12px; border-radius:8px; font-weight:bold; }
-    #role-instructor { background-color: #4CAF50; color:white; }
-    #role-student { background-color: #2196F3; color:white; }
-    #role-modal button:hover { opacity:0.85; }
+    #calendar-header button {
+      padding: 8px 16px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #calendar-header button:hover { opacity: 0.85; }
+
+    #calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      max-width: 800px;
+      margin: 6px auto 0;
+      text-align: center;
+      font-weight: bold;
+      font-size: 13px;
+      color: #555;
+    }
+
+    #calendar-container {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      max-width: 800px;
+      margin: 4px auto;
+    }
+
+    .calendar-day {
+      border: 1px solid #ccc;
+      padding: 10px 4px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 5px;
+      min-height: 50px;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .calendar-day:hover { background: #f0f0f0; }
+    .calendar-day.has-class { background-color: #d4edda; font-weight: bold; }
+    .calendar-day.empty { border: none; cursor: default; background: none !important; }
+
+    /* ── Modals ───────────────────────────────────────────── */
+    .modal {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 1000;
+    }
+    .modal.hidden { display: none; }
+
+    .modal-content {
+      background: white;
+      padding: 24px 20px 20px;
+      border-radius: 10px;
+      width: 90%; max-width: 420px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+
+    .close {
+      position: absolute; top: 10px; right: 14px;
+      cursor: pointer; font-size: 22px; font-weight: bold; color: #555;
+      line-height: 1;
+    }
+    .close:hover { color: #000; }
+
+    /* Role buttons */
+    #role-modal .role-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    #role-modal .role-buttons button {
+      flex: 1;
+      padding: 14px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      border: none;
+      cursor: pointer;
+    }
+    #role-instructor { background-color: #4CAF50; color: white; }
+    #role-student    { background-color: #2196F3; color: white; }
+    #role-instructor:hover, #role-student:hover { opacity: 0.85; }
+
+    /* Instructor / student form inputs */
+    .modal-content input[type="text"],
+    .modal-content input[type="password"],
+    .modal-content input[type="number"],
+    .modal-content input[type="datetime-local"] {
+      display: block;
+      width: 100%;
+      margin: 6px 0 10px;
+      padding: 9px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    #verify-password, #add-class {
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #verify-password:hover, #add-class:hover { opacity: 0.85; }
+    #verify-password:disabled, #add-class:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Student class cards */
+    .class-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .class-card button {
+      margin-top: 8px;
+      padding: 8px 16px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .class-card button:hover { opacity: 0.85; }
   </style>
 </head>
 
@@ -36,7 +164,7 @@
     <a href="index.html">Home</a>
     <a href="schedule.html">Schedule</a>
     <a href="services.html">Services</a>
-    <a href="index.html#bookings" id="header-bookings-link">Bookings</a>
+    <a href="index.html#bookings">Bookings</a>
     <a href="about.html">About Us</a>
   </nav>
 
@@ -47,58 +175,73 @@
     <div id="visitor-counter" style="text-align:center; margin-top:20px; font-size:18px;">🌍 Loading visitors...</div>
     <pre id="visitor-debug" style="text-align:center; margin-top:10px; color:red;"></pre>
 
-    <!-- Bookings Section -->
+    <!-- ── Bookings Section ──────────────────────────────── -->
     <section id="bookings">
       <h2 style="text-align:center;">Bookings</h2>
+
       <div id="calendar-header">
-        <button id="prev-month">&lt; Prev</button>
-        <span id="calendar-month"></span>
-        <button id="next-month">Next &gt;</button>
+        <button id="prev-month">&#8592; Prev</button>
+        <span id="calendar-month" style="font-size:18px; font-weight:bold;"></span>
+        <button id="next-month">Next &#8594;</button>
       </div>
+
+      <div id="calendar-weekdays">
+        <div>Sun</div><div>Mon</div><div>Tue</div>
+        <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+
       <div id="calendar-container"></div>
 
-      <!-- Role Selection Modal -->
-      <div id="role-modal" class="modal" style="display:none;">
+      <!-- Role Modal -->
+      <div id="role-modal" class="modal hidden">
         <div class="modal-content">
           <span class="close" id="close-role">&times;</span>
-          <h3>Select Your Role</h3>
-          <button id="role-instructor">Instructor</button>
-          <button id="role-student">Student</button>
+          <h3 style="margin:0 0 4px;">Who are you?</h3>
+          <p id="role-modal-date" style="color:#555; margin:0 0 8px; font-size:14px;"></p>
+          <div class="role-buttons">
+            <button id="role-instructor">&#129528; Instructor</button>
+            <button id="role-student">&#127891; Student</button>
+          </div>
         </div>
       </div>
 
       <!-- Instructor Modal -->
-      <div id="instructor-modal" class="modal" style="display:none;">
+      <div id="instructor-modal" class="modal hidden">
         <div class="modal-content">
           <span class="close" id="close-instructor">&times;</span>
-          <h3>Instructor: Add Class</h3>
-          <form id="class-form">
-            <label for="instructor-name">Instructor Name:</label>
-            <input type="text" id="instructor-name" placeholder="Enter your name" required>
+          <h3 style="margin:0 0 12px;">Add a Class</h3>
 
-            <label for="class-type">Class Type:</label>
-            <input type="text" id="class-type" placeholder="Enter class type" required>
+          <div id="password-section">
+            <label style="font-size:13px;color:#555;">Instructor password</label>
+            <input type="password" id="instructor-password" placeholder="Enter password">
+            <button id="verify-password">Verify &#10003;</button>
+          </div>
 
-            <label for="start-time">Class (From):</label>
-            <input type="datetime-local" id="start-time" required>
+          <div id="class-form-section" style="display:none;">
+            <label style="font-size:13px;color:#555;">Class title</label>
+            <input type="text" id="class-title" placeholder="e.g. Morning Yoga">
 
-            <label for="end-time">Class (To):</label>
-            <input type="datetime-local" id="end-time" required>
+            <label style="font-size:13px;color:#555;">Start time</label>
+            <input type="datetime-local" id="start-time">
 
-            <label for="capacity">Capacity:</label>
-            <input type="number" id="capacity" value="10" min="1" required>
+            <label style="font-size:13px;color:#555;">End time</label>
+            <input type="datetime-local" id="end-time">
 
-            <button type="submit" id="add-class">Add Class</button>
-          </form>
+            <label style="font-size:13px;color:#555;">Capacity</label>
+            <input type="number" id="capacity" value="10" min="1">
+
+            <button id="add-class">&#10003; Add Class</button>
+          </div>
         </div>
       </div>
 
       <!-- Student Modal -->
-      <div id="student-modal" class="modal" style="display:none;">
+      <div id="student-modal" class="modal hidden">
         <div class="modal-content">
           <span class="close" id="close-student">&times;</span>
-          <h3>Available Classes</h3>
-          <div id="student-classes-list"></div>
+          <h3 style="margin:0 0 4px;">Available Classes</h3>
+          <p id="student-modal-date" style="color:#555; margin:0 0 12px; font-size:14px;"></p>
+          <div id="student-classes-list">Loading&#8230;</div>
         </div>
       </div>
     </section>
@@ -106,163 +249,271 @@
 
   <script src="js/main.js"></script>
 
-  <!-- Visitor Counter Script -->
+  <!-- Visitor Counter -->
   <script>
-async function loadVisitors() {
-  const counterEl = document.getElementById("visitor-counter");
-  const debugEl = document.getElementById("visitor-debug");
-  try {
-    const res = await fetch("https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track", { method:"POST", headers:{ "Content-Type":"application/json" } });
-    const data = await res.json();
-    if(data.error){ counterEl.innerText="🌍 Visitors unavailable"; debugEl.innerText="Error:"+data.error; }
-    else { counterEl.innerText="🌍 Unique Visitors:"+ (data.unique??0); debugEl.innerText=""; }
-  } catch(err){ counterEl.innerText="🌍 Visitors unavailable"; debugEl.innerText="Fetch error:"+err.message; }
-}
-loadVisitors();
+    (async function loadVisitors() {
+      const counterEl = document.getElementById("visitor-counter");
+      const debugEl   = document.getElementById("visitor-debug");
+      try {
+        const res  = await fetch("https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track", {
+          method: "POST", headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        if (data.error) {
+          counterEl.innerText = "🌍 Visitors unavailable";
+          debugEl.innerText   = "Error: " + data.error;
+        } else {
+          counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
+          debugEl.innerText   = "";
+        }
+      } catch (err) {
+        counterEl.innerText = "🌍 Visitors unavailable";
+        debugEl.innerText   = "Fetch error: " + err.message;
+      }
+    })();
   </script>
 
-  <!-- Bookings Script -->
-<script type="module">
-  // Supabase client setup
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  <!-- ══════════════════════════════════════════════════════
+       BOOKINGS + CALENDAR  —  single <script type="module">
+  ══════════════════════════════════════════════════════ -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  const supabaseUrl = "https://utpwbrbpdyrwqlheaknm.supabase.co";
-  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U"; // Replace with your Supabase anon key
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    /* ── Supabase client ────────────────────────────────── */
+    const supabase = createClient(
+      "https://utpwbrbpdyrwqlheaknm.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U"
+    );
 
-  // Function to fetch class data
-  async function fetchClasses() {
-    try {
-      const { data, error } = await supabase
-        .from("classes")
-        .select("start_time, end_time");
+    /* ── App state ──────────────────────────────────────── */
+    let monthOffset  = 0;   // 0 = current month; ±N = months from now
+    let selectedDate = "";  // "YYYY-MM-DD"
+
+    /* ── Modal helpers ──────────────────────────────────── */
+    const $ = id => document.getElementById(id);
+
+    function showModal(id) { $(id).classList.remove("hidden"); }
+    function hideModal(id) { $(id).classList.add("hidden"); }
+
+    // Click-outside-to-close for all modals
+    ["role-modal", "instructor-modal", "student-modal"].forEach(id => {
+      $(id).addEventListener("click", e => { if (e.target === $(id)) hideModal(id); });
+    });
+
+    /* ── Pretty date string ─────────────────────────────── */
+    function prettyDate(ymd) {
+      const [y, m, d] = ymd.split("-").map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString("default", {
+        weekday: "long", year: "numeric", month: "long", day: "numeric"
+      });
+    }
+
+    /* ══════════════════════════════════════════════════════
+       CALENDAR
+    ══════════════════════════════════════════════════════ */
+    async function renderCalendar() {
+      const container  = $("calendar-container");
+      const monthLabel = $("calendar-month");
+
+      // Compute target year/month from today + offset
+      const base  = new Date();
+      const first = new Date(base.getFullYear(), base.getMonth() + monthOffset, 1);
+      const last  = new Date(base.getFullYear(), base.getMonth() + monthOffset + 1, 0);
+
+      const daysInMonth = last.getDate();
+      const startCol    = first.getDay();   // 0 = Sun … 6 = Sat
+
+      monthLabel.innerText = first.toLocaleString("default", {
+        month: "long", year: "numeric"
+      });
+
+      /* fetch days-with-classes for this month */
+      const classDays = new Set();
+      try {
+        const { data, error } = await supabase
+          .from("classes")
+          .select("start_time")
+          .gte("start_time", first.toISOString())
+          .lte("start_time", new Date(last.getFullYear(), last.getMonth(), last.getDate(), 23, 59, 59).toISOString());
+
+        if (!error && data) {
+          data.forEach(c => classDays.add(new Date(c.start_time).getDate()));
+        }
+      } catch (_) { /* calendar still renders without class highlights */ }
+
+      /* build grid cells */
+      container.innerHTML = "";
+
+      // Leading blank cells
+      for (let i = 0; i < startCol; i++) {
+        const blank = document.createElement("div");
+        blank.className = "calendar-day empty";
+        container.appendChild(blank);
+      }
+
+      // Day cells
+      for (let d = 1; d <= daysInMonth; d++) {
+        const cell = document.createElement("div");
+        cell.className = "calendar-day" + (classDays.has(d) ? " has-class" : "");
+        cell.textContent = d;
+
+        const yy = String(first.getFullYear());
+        const mm = String(first.getMonth() + 1).padStart(2, "0");
+        const dd = String(d).padStart(2, "0");
+        const dateStr = `${yy}-${mm}-${dd}`;
+
+        cell.addEventListener("click", () => {
+          selectedDate = dateStr;
+          $("role-modal-date").innerText = prettyDate(dateStr);
+          showModal("role-modal");
+        });
+
+        container.appendChild(cell);
+      }
+    }
+
+    $("prev-month").addEventListener("click", () => { monthOffset--; renderCalendar(); });
+    $("next-month").addEventListener("click", () => { monthOffset++; renderCalendar(); });
+
+    /* ══════════════════════════════════════════════════════
+       ROLE MODAL
+    ══════════════════════════════════════════════════════ */
+    $("close-role").addEventListener("click",       () => hideModal("role-modal"));
+    $("role-instructor").addEventListener("click",  () => { hideModal("role-modal"); openInstructorModal(); });
+    $("role-student").addEventListener("click",     () => { hideModal("role-modal"); openStudentModal(); });
+
+    /* ══════════════════════════════════════════════════════
+       INSTRUCTOR MODAL
+    ══════════════════════════════════════════════════════ */
+    function openInstructorModal() {
+      $("instructor-password").value              = "";
+      $("class-title").value                      = "";
+      $("password-section").style.display         = "block";
+      $("class-form-section").style.display       = "none";
+
+      // Pre-fill start/end with selected date at 09:00–10:00
+      if (selectedDate) {
+        $("start-time").value = selectedDate + "T09:00";
+        $("end-time").value   = selectedDate + "T10:00";
+      }
+      showModal("instructor-modal");
+    }
+
+    $("close-instructor").addEventListener("click", () => hideModal("instructor-modal"));
+
+    // Password verify (button + Enter key)
+    function verifyPassword() {
+      if ($("instructor-password").value === "wellness") {
+        $("password-section").style.display   = "none";
+        $("class-form-section").style.display = "block";
+      } else {
+        alert("Incorrect password. Please try again.");
+        $("instructor-password").value = "";
+        $("instructor-password").focus();
+      }
+    }
+    $("verify-password").addEventListener("click", verifyPassword);
+    $("instructor-password").addEventListener("keydown", e => { if (e.key === "Enter") verifyPassword(); });
+
+    $("add-class").addEventListener("click", async () => {
+      const title      = $("class-title").value.trim();
+      const start_time = $("start-time").value;
+      const end_time   = $("end-time").value;
+      const capacity   = parseInt($("capacity").value, 10) || 10;
+
+      if (!title)                    { alert("Please enter a class title.");          return; }
+      if (!start_time)               { alert("Please set a start time.");             return; }
+      if (!end_time)                 { alert("Please set an end time.");              return; }
+      if (end_time <= start_time)    { alert("End time must be after start time.");   return; }
+
+      const btn = $("add-class");
+      btn.disabled    = true;
+      btn.textContent = "Saving…";
+
+      const { error } = await supabase.from("classes").insert([{
+        title, instructor: "Instructor", start_time, end_time, capacity
+      }]);
+
+      btn.disabled    = false;
+      btn.textContent = "✓ Add Class";
 
       if (error) {
-        console.error("Error fetching classes:", error.message);
+        alert("Error saving class: " + error.message);
       } else {
-        console.log("Classes fetched:", data);
-        renderCalendar(data);  // Function to render the calendar with class data
+        alert(`"${title}" has been added! ✅`);
+        hideModal("instructor-modal");
+        renderCalendar();
       }
-    } catch (err) {
-      console.error("Fetch error:", err.message);
+    });
+
+    /* ══════════════════════════════════════════════════════
+       STUDENT MODAL
+    ══════════════════════════════════════════════════════ */
+    function openStudentModal() {
+      $("student-modal-date").innerText    = prettyDate(selectedDate);
+      $("student-classes-list").innerHTML  = "Loading&#8230;";
+      showModal("student-modal");
+      loadStudentClasses(selectedDate);
     }
-  }
 
-  // Call the fetchClasses function
-  fetchClasses();
+    $("close-student").addEventListener("click", () => hideModal("student-modal"));
 
-  // Your renderCalendar function here, to display the data
-  function renderCalendar(classesData) {
-    const calendarContainer = document.getElementById("calendar-container");
-    const calendarMonthLabel = document.getElementById("calendar-month");
+    async function loadStudentClasses(date) {
+      const listEl = $("student-classes-list");
 
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
-    const daysInMonth = lastDayOfMonth.getDate();
-
-    // Set the calendar month label
-    calendarMonthLabel.innerText = firstDayOfMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
-
-    // Clear any existing calendar days
-    calendarContainer.innerHTML = "";
-
-    // Render the days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dayDiv = document.createElement("div");
-      dayDiv.classList.add("calendar-day");
-      dayDiv.innerText = day;
-
-      // Check if this day has a class and add the appropriate class
-      const classOnThisDay = classesData.find(c => new Date(c.start_time).getDate() === day);
-      if (classOnThisDay) {
-        dayDiv.classList.add("has-class");
-        // Check if the class spans multiple days
-        const classEndDate = new Date(classOnThisDay.end_time).getDate();
-        for (let d = day; d <= classEndDate; d++) {
-          calendarContainer.children[d - 1].classList.add("has-class");
-        }
-      }
-
-      calendarContainer.appendChild(dayDiv);
-    }
-  }
-
-  renderCalendar(currentMonthOffset);
-  document.getElementById("prev-month").onclick = () => { currentMonthOffset--; renderCalendar(currentMonthOffset); };
-  document.getElementById("next-month").onclick = () => { currentMonthOffset++; renderCalendar(currentMonthOffset); };
-
-  // Role modal buttons
-  document.getElementById("close-role").onclick = () => roleModal.style.display = "none";
-  document.getElementById("role-instructor").onclick = () => { roleModal.style.display = "none"; openInstructorModal(); };
-  document.getElementById("role-student").onclick = () => { roleModal.style.display = "none"; openStudentModal(); };
-
-  // Instructor modal
-  function openInstructorModal() {
-    instructorModal.style.display = "flex";
-    document.getElementById("password-section").style.display = "block";
-    document.getElementById("class-form-section").style.display = "none";
-  }
-  document.getElementById("close-instructor").onclick = () => instructorModal.style.display = "none";
-
-  document.getElementById("verify-password").onclick = () => {
-    if (document.getElementById("instructor-password").value === "wellness") {
-        document.getElementById("password-section").style.display = "none";
-        document.getElementById("class-form-section").style.display = "block";
-    } else {
-        alert("Incorrect password");
-    }
-  };
-
-  document.getElementById("add-class").onclick = async (e) => {
-    e.preventDefault();
-    const instructor = document.getElementById("instructor-name").value;
-    const classType = document.getElementById("class-type").value;
-    const start_time = document.getElementById("start-time").value;
-    const end_time = document.getElementById("end-time").value;
-    const capacity = parseInt(document.getElementById("capacity").value);
-
-    const { error } = await supabase.from("classes").insert([{ instructor, class_type: classType, start_time, end_time, capacity }]);
-    if (error) alert(error.message);
-    else {
-        alert("Class added!");
-        renderCalendar(currentMonthOffset);
-    }
-    instructorModal.style.display = "none";
-  };
-
-  // Student modal
-  function openStudentModal() { studentModal.style.display = "flex"; loadStudentClasses(selectedDate); }
-  document.getElementById("close-student").onclick = () => studentModal.style.display = "none";
-
-  async function loadStudentClasses(date) {
-    const { data: classes, error } = await supabase.from("classes")
+      const { data: classes, error } = await supabase
+        .from("classes")
         .select("*")
-        .gte("start_time", date + "T00:00")
-        .lte("end_time", date + "T23:59");
+        .gte("start_time", date + "T00:00:00")
+        .lte("start_time", date + "T23:59:59")
+        .order("start_time", { ascending: true });
 
-    const listEl = document.getElementById("student-classes-list");
-    listEl.innerHTML = "";
-    if (error) { listEl.innerText = error.message; return; }
-    if (classes.length === 0) { listEl.innerText = "No classes for this day"; return; }
+      if (error) {
+        listEl.innerHTML = `<p style="color:red;">Error loading classes: ${error.message}</p>`;
+        return;
+      }
+      if (!classes || classes.length === 0) {
+        listEl.innerHTML = `<p style="color:#888; text-align:center;">No classes scheduled for this day.</p>`;
+        return;
+      }
 
-    for (const c of classes) {
-        const div = document.createElement("div");
-        div.innerHTML = `<strong>${c.title}</strong> by ${c.instructor}<br>${new Date(c.start_time).toLocaleString()} - ${new Date(c.end_time).toLocaleString()} <button>Book</button>`;
-        div.querySelector("button").onclick = async () => {
-            const studentName = prompt("Enter your name to book this class:");
-            if (!studentName) return;
-            const { error } = await supabase.from("bookings").insert([{ class_id: c.id, student_name: studentName }]);
-            alert(error ? error.message : "Booked!");
-            loadStudentClasses(date);
-        };
-        listEl.appendChild(div);
+      listEl.innerHTML = "";
+
+      for (const c of classes) {
+        const start = new Date(c.start_time).toLocaleTimeString("default", { hour: "2-digit", minute: "2-digit" });
+        const end   = new Date(c.end_time).toLocaleTimeString("default",   { hour: "2-digit", minute: "2-digit" });
+
+        const card = document.createElement("div");
+        card.className = "class-card";
+        card.innerHTML = `
+          <strong style="font-size:15px;">${c.title}</strong>
+          <div style="font-size:13px; color:#555; margin:4px 0;">
+            🕐 ${start} – ${end} &nbsp;|&nbsp; 👤 ${c.instructor}
+          </div>
+          <div style="font-size:13px; color:#777;">Capacity: ${c.capacity}</div>
+          <button>Book this class</button>
+        `;
+
+        card.querySelector("button").addEventListener("click", async () => {
+          const name = prompt(`Book "${c.title}" — enter your name:`);
+          if (!name || !name.trim()) return;
+
+          const { error: bookErr } = await supabase
+            .from("bookings")
+            .insert([{ class_id: c.id, student_name: name.trim() }]);
+
+          alert(bookErr
+            ? "Booking failed: " + bookErr.message
+            : `You're booked into "${c.title}"! 🎉`
+          );
+        });
+
+        listEl.appendChild(card);
+      }
     }
-  }
-</script>
 
+    /* ── Initial calendar render ────────────────────────── */
+    renderCalendar();
+  </script>
 </body>
 </html>

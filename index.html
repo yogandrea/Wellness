@@ -24,13 +24,12 @@
       🌍 Loading visitors...
     </div>
 
-    <!-- ✅ Debug log -->
+    <!-- ✅ Debug info -->
     <pre id="visitor-debug" style="text-align:center; margin-top:10px; color:red;"></pre>
   </main>
 
   <script src="js/main.js"></script>
 
-  <!-- ✅ Visitor Tracking Script -->
   <script>
 async function loadVisitors() {
   const counterEl = document.getElementById("visitor-counter");
@@ -40,7 +39,7 @@ async function loadVisitors() {
     const res = await fetch(
       "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
       {
-        method: "POST",  // Use POST to trigger insert
+        method: "POST",
         headers: {
           "Content-Type": "application/json"
         }
@@ -54,18 +53,17 @@ async function loadVisitors() {
       debugEl.innerText = "Error: " + data.error;
     } else {
       counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
-      debugEl.innerText = ""; // clear debug
+      debugEl.innerText = "";
     }
 
   } catch (err) {
     console.error(err);
     counterEl.innerText = "🌍 Visitors unavailable";
-    debugEl.innerText = "Fetch Error: " + err.message;
+    debugEl.innerText = "Fetch error: " + err.message;
   }
 }
 
 loadVisitors();
-</script>
-
+  </script>
 </body>
 </html>

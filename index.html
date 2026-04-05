@@ -346,6 +346,38 @@
           <div id="student-classes-list">Loading…</div>
         </div>
       </div>
+      <!-- ── Admin Modal ────────────────────────────────────── -->
+      <div id="admin-modal" class="modal hidden">
+        <div class="modal-content" style="max-width:520px;">
+          <span class="close" id="close-admin">&times;</span>
+          <h3>Admin — Manage Classes</h3>
+
+          <div id="admin-password-section">
+            <label class="field-label">Admin Password</label>
+            <input type="password" id="admin-password" placeholder="Enter admin password">
+            <button class="modal-btn" id="admin-verify">Verify ✓</button>
+          </div>
+
+          <div id="admin-panel" style="display:none;">
+            <p style="font-size:13px;color:#666;margin:0 0 12px;">
+              Select classes to delete. This cannot be undone.
+            </p>
+            <div id="admin-classes-list">Loading…</div>
+            <button class="modal-btn" id="admin-delete-selected"
+              style="background:#e53935;margin-top:14px;display:none;">
+              🗑 Delete Selected Classes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inconspicuous admin trigger -->
+      <div style="text-align:right; max-width:800px; margin:8px auto 0; padding-right:4px;">
+        <span id="admin-trigger"
+          style="font-size:10px; color:#ccc; cursor:pointer; user-select:none;">
+          admin
+        </span>
+      </div>
     </section>
   </main>
 
@@ -671,6 +703,106 @@
 
     /* ── Initial render ─────────────────────────────────────── */
     renderCalendar();
+
+    /* ════════════════════════════════════════════════════════
+       ADMIN PANEL — delete classes
+       Triggered by tiny "admin" text at bottom of calendar.
+       Password: "boss"
+    ════════════════════════════════════════════════════════ */
+    $("admin-trigger").addEventListener("click", () => {
+      // Reset to password step each time
+      $("admin-password").value             = "";
+      $("admin-password-section").style.display = "block";
+      $("admin-panel").style.display            = "none";
+      showModal("admin-modal");
+    });
+
+    $("close-admin").addEventListener("click", () => hideModal("admin-modal"));
+    $("admin-modal").addEventListener("click", e => {
+      if (e.target === $("admin-modal")) hideModal("admin-modal");
+    });
+
+    function verifyAdmin() {
+      if ($("admin-password").value === "boss") {
+        $("admin-password-section").style.display = "none";
+        $("admin-panel").style.display            = "block";
+        loadAdminClasses();
+      } else {
+        alert("Incorrect admin password.");
+        $("admin-password").value = "";
+        $("admin-password").focus();
+      }
+    }
+    $("admin-verify").addEventListener("click", verifyAdmin);
+    $("admin-password").addEventListener("keydown", e => { if (e.key === "Enter") verifyAdmin(); });
+
+    async function loadAdminClasses() {
+      const listEl  = $("admin-classes-list");
+      const delBtn  = $("admin-delete-selected");
+      listEl.innerHTML = "Loading…";
+      delBtn.style.display = "none";
+
+      const { data: classes, error } = await supabase
+        .from("classes")
+        .select("id, title, instructor, start_time, end_time")
+        .order("start_time", { ascending: true });
+
+      if (error) { listEl.innerHTML = `<p style="color:red;">${error.message}</p>`; return; }
+      if (!classes || classes.length === 0) {
+        listEl.innerHTML = `<p style="color:#888;">No classes found.</p>`;
+        return;
+      }
+
+      listEl.innerHTML = "";
+      delBtn.style.display = "block";
+
+      classes.forEach(c => {
+        // Parse "[Type] Title" format
+        let label = c.title;
+        const m = c.title.match(/^\[(.+?)\]\s*(.+)$/);
+        if (m) label = `[${m[1]}] ${m[2]}`;
+
+        const start = new Date(c.start_time).toLocaleString("default", {
+          day: "numeric", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit"
+        });
+
+        const row = document.createElement("div");
+        row.style.cssText = "display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;";
+        row.innerHTML = `
+          <input type="checkbox" data-id="${c.id}"
+            style="margin-top:3px;width:16px;height:16px;cursor:pointer;flex-shrink:0;">
+          <div style="font-size:13px;line-height:1.5;">
+            <strong>${label}</strong><br>
+            <span style="color:#555;">👤 ${c.instructor}</span><br>
+            <span style="color:#777;">📅 ${start}</span>
+          </div>
+        `;
+        listEl.appendChild(row);
+      });
+    }
+
+    $("admin-delete-selected").addEventListener("click", async () => {
+      const checked = [...document.querySelectorAll("#admin-classes-list input[type=checkbox]:checked")];
+      if (checked.length === 0) { alert("No classes selected."); return; }
+
+      const confirmMsg = `Delete ${checked.length} class${checked.length > 1 ? "es" : ""}? This cannot be undone.`;
+      if (!confirm(confirmMsg)) return;
+
+      const ids = checked.map(cb => cb.dataset.id);
+
+      // Delete associated bookings first (foreign key), then the classes
+      await supabase.from("bookings").delete().in("class_id", ids);
+      const { error } = await supabase.from("classes").delete().in("id", ids);
+
+      if (error) {
+        alert("Delete failed: " + error.message);
+      } else {
+        alert(`${checked.length} class${checked.length > 1 ? "es" : ""} deleted. ✅`);
+        await loadAdminClasses();  // refresh the list
+        renderCalendar();          // refresh calendar
+      }
+    });
   </script>
 </body>
 </html>

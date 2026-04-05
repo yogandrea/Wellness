@@ -9,13 +9,12 @@
   <style>
     /* Bookings Calendar Styles */
     #bookings { padding:20px; margin-top:50px; }
-    #calendar-header { display:flex; justify-content:space-between; align-items:center; max-width:800px; margin:10px auto; }
-    #calendar-container { display:grid; grid-template-columns:repeat(7, 1fr); gap:5px; max-width:800px; margin:auto; }
+    #calendar-header { display:flex; justify-content: space-between; align-items:center; max-width:800px; margin:10px auto; }
+    #calendar-container { display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; max-width:800px; margin:auto; }
     .calendar-day { border:1px solid #ccc; padding:10px; text-align:center; cursor:pointer; border-radius:5px; min-height:50px; }
     .calendar-day:hover { background:#f0f0f0; }
-    .calendar-day.has-class { background-color:#d4edda; font-weight:bold; }
-    .calendar-day.selected-range { background-color:#add8e6; }
-    .calendar-day.empty { border:none; cursor:default; }
+    .calendar-day.has-class { background-color:#d4edda; font-weight:bold; } /* Light green for classes */
+    .calendar-day.selected-range { background-color:#add8e6; } /* Blue for selected range */
 
     /* Modal Styles */
     .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000; }
@@ -26,8 +25,8 @@
 
     /* Role modal buttons */
     #role-modal button { width:45%; margin:5px; padding:12px; border-radius:8px; font-weight:bold; }
-    #role-instructor { background-color:#4CAF50; color:white; }
-    #role-student { background-color:#2196F3; color:white; }
+    #role-instructor { background-color: #4CAF50; color:white; }
+    #role-student { background-color: #2196F3; color:white; }
     #role-modal button:hover { opacity:0.85; }
   </style>
 </head>
@@ -100,216 +99,156 @@
 
   <script src="js/main.js"></script>
 
-  <!-- Visitor Counter Script (plain script, no module needed) -->
+  <!-- Visitor Counter Script -->
   <script>
-    async function loadVisitors() {
-      const counterEl = document.getElementById("visitor-counter");
-      const debugEl   = document.getElementById("visitor-debug");
-      try {
-        const res  = await fetch("https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" }
-        });
-        const data = await res.json();
-        if (data.error) {
-          counterEl.innerText = "🌍 Visitors unavailable";
-          debugEl.innerText   = "Error: " + data.error;
-        } else {
-          counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
-          debugEl.innerText   = "";
-        }
-      } catch (err) {
-        counterEl.innerText = "🌍 Visitors unavailable";
-        debugEl.innerText   = "Fetch error: " + err.message;
-      }
-    }
-    loadVisitors();
+async function loadVisitors() {
+  const counterEl = document.getElementById("visitor-counter");
+  const debugEl = document.getElementById("visitor-debug");
+  try {
+    const res = await fetch("https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track", { method:"POST", headers:{ "Content-Type":"application/json" } });
+    const data = await res.json();
+    if(data.error){ counterEl.innerText="🌍 Visitors unavailable"; debugEl.innerText="Error:"+data.error; }
+    else { counterEl.innerText="🌍 Unique Visitors:"+ (data.unique??0); debugEl.innerText=""; }
+  } catch(err){ counterEl.innerText="🌍 Visitors unavailable"; debugEl.innerText="Fetch error:"+err.message; }
+}
+loadVisitors();
   </script>
 
-  <!-- ============================================================
-       ALL BOOKINGS + CALENDAR LOGIC — ONE SINGLE MODULE BLOCK
-       ============================================================ -->
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  <!-- Bookings Script -->
+<script type="module">
+  // Supabase client setup
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // ── Supabase setup ──────────────────────────────────────────
-    const SUPABASE_URL  = "https://utpwbrbpdyrwqlheaknm.supabase.co";
-    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U";
-    const supabase      = createClient(SUPABASE_URL, SUPABASE_ANON);
+  const supabaseUrl = "https://utpwbrbpdyrwqlheaknm.supabase.co";
+  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U"; // Replace with your Supabase anon key
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // ── State ───────────────────────────────────────────────────
-    let currentMonthOffset = 0;   // 0 = this month, -1 = last month, +1 = next, …
-    let selectedDate       = null; // "YYYY-MM-DD" string
-
-    // ── DOM refs ────────────────────────────────────────────────
-    const roleModal       = document.getElementById("role-modal");
-    const instructorModal = document.getElementById("instructor-modal");
-    const studentModal    = document.getElementById("student-modal");
-
-    // ── Calendar rendering ──────────────────────────────────────
-    async function renderCalendar(offset) {
-      const calendarContainer = document.getElementById("calendar-container");
-      const calendarMonthLabel = document.getElementById("calendar-month");
-
-      const now   = new Date();
-      const year  = now.getFullYear();
-      const month = now.getMonth() + offset;           // JS handles overflow automatically
-
-      const firstDay    = new Date(year, month, 1);
-      const lastDay     = new Date(year, month + 1, 0);
-      const daysInMonth = lastDay.getDate();
-      const startWeekday = firstDay.getDay();           // 0 = Sunday
-
-      // Label e.g. "April 2025"
-      calendarMonthLabel.innerText = firstDay.toLocaleString("default", { month: "long", year: "numeric" });
-
-      // Fetch classes for this month
-      const monthStart = firstDay.toISOString();
-      const monthEnd   = lastDay.toISOString().replace("T00:00:00.000Z", "T23:59:59.000Z");
-
-      let classDays = new Set();
-      try {
-        const { data, error } = await supabase
-          .from("classes")
-          .select("start_time")
-          .gte("start_time", monthStart)
-          .lte("start_time", monthEnd);
-
-        if (error) {
-          console.error("Error fetching classes:", error.message);
-        } else {
-          data.forEach(c => {
-            const d = new Date(c.start_time).getDate();
-            classDays.add(d);
-          });
-        }
-      } catch (err) {
-        console.error("Calendar fetch error:", err.message);
-      }
-
-      // Render grid
-      calendarContainer.innerHTML = "";
-
-      // Leading empty cells so day 1 lands on the right weekday
-      for (let i = 0; i < startWeekday; i++) {
-        const empty = document.createElement("div");
-        empty.classList.add("calendar-day", "empty");
-        calendarContainer.appendChild(empty);
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dayDiv = document.createElement("div");
-        dayDiv.classList.add("calendar-day");
-        dayDiv.innerText = day;
-
-        if (classDays.has(day)) dayDiv.classList.add("has-class");
-
-        // Build the YYYY-MM-DD string for this cell
-        const dateStr = `${firstDay.getFullYear()}-${String(firstDay.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
-        dayDiv.addEventListener("click", () => {
-          selectedDate = dateStr;
-          roleModal.style.display = "flex";
-        });
-
-        calendarContainer.appendChild(dayDiv);
-      }
-    }
-
-    // ── Month navigation ────────────────────────────────────────
-    document.getElementById("prev-month").onclick = () => { currentMonthOffset--; renderCalendar(currentMonthOffset); };
-    document.getElementById("next-month").onclick  = () => { currentMonthOffset++; renderCalendar(currentMonthOffset); };
-
-    // ── Role modal ──────────────────────────────────────────────
-    document.getElementById("close-role").onclick       = () => { roleModal.style.display = "none"; };
-    document.getElementById("role-instructor").onclick  = () => { roleModal.style.display = "none"; openInstructorModal(); };
-    document.getElementById("role-student").onclick     = () => { roleModal.style.display = "none"; openStudentModal(); };
-
-    // ── Instructor modal ────────────────────────────────────────
-    function openInstructorModal() {
-      document.getElementById("password-section").style.display   = "block";
-      document.getElementById("class-form-section").style.display = "none";
-      document.getElementById("instructor-password").value        = "";
-      instructorModal.style.display = "flex";
-    }
-
-    document.getElementById("close-instructor").onclick = () => { instructorModal.style.display = "none"; };
-
-    document.getElementById("verify-password").onclick = () => {
-      if (document.getElementById("instructor-password").value === "wellness") {
-        document.getElementById("password-section").style.display   = "none";
-        document.getElementById("class-form-section").style.display = "block";
-      } else {
-        alert("Incorrect password");
-      }
-    };
-
-    document.getElementById("add-class").onclick = async () => {
-      const title      = document.getElementById("class-title").value.trim();
-      const start_time = document.getElementById("start-time").value;
-      const end_time   = document.getElementById("end-time").value;
-      const capacity   = parseInt(document.getElementById("capacity").value, 10);
-
-      if (!title || !start_time || !end_time) { alert("Please fill in all fields."); return; }
-
-      const { error } = await supabase
+  // Function to fetch class data
+  async function fetchClasses() {
+    try {
+      const { data, error } = await supabase
         .from("classes")
-        .insert([{ title, instructor: "Instructor", start_time, end_time, capacity }]);
+        .select("start_time");
 
       if (error) {
-        alert("Error adding class: " + error.message);
+        console.error("Error fetching classes:", error.message);
       } else {
-        alert("Class added!");
-        instructorModal.style.display = "none";
-        renderCalendar(currentMonthOffset);   // refresh calendar
+        console.log("Classes fetched:", data);
+        renderCalendar(data);  // Function to render the calendar with class data
       }
-    };
-
-    // ── Student modal ───────────────────────────────────────────
-    function openStudentModal() {
-      studentModal.style.display = "flex";
-      loadStudentClasses(selectedDate);
+    } catch (err) {
+      console.error("Fetch error:", err.message);
     }
+  }
 
-    document.getElementById("close-student").onclick = () => { studentModal.style.display = "none"; };
+  // Call the fetchClasses function
+  fetchClasses();
 
-    async function loadStudentClasses(date) {
+  // Your renderCalendar function here, to display the data
+  function renderCalendar(classesData) {
+    const calendarContainer = document.getElementById("calendar-container");
+    const calendarMonthLabel = document.getElementById("calendar-month");
+
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+    const daysInMonth = lastDayOfMonth.getDate();
+
+    // Set the calendar month label
+    calendarMonthLabel.innerText = firstDayOfMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    // Clear any existing calendar days
+    calendarContainer.innerHTML = "";
+
+    // Render the days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayDiv = document.createElement("div");
+      dayDiv.classList.add("calendar-day");
+      dayDiv.innerText = day;
+
+      // Check if this day has a class and add the appropriate class
+      const classOnThisDay = classesData.find(c => new Date(c.start_time).getDate() === day);
+      if (classOnThisDay) {
+        dayDiv.classList.add("has-class");
+      }
+
+      calendarContainer.appendChild(dayDiv);
+    }
+  }
+
+  renderCalendar(currentMonthOffset);
+  document.getElementById("prev-month").onclick = () => { currentMonthOffset--; renderCalendar(currentMonthOffset); };
+  document.getElementById("next-month").onclick = () => { currentMonthOffset++; renderCalendar(currentMonthOffset); };
+
+  // Role modal buttons
+  document.getElementById("close-role").onclick = () => roleModal.style.display = "none";
+  document.getElementById("role-instructor").onclick = () => { roleModal.style.display = "none"; openInstructorModal(); };
+  document.getElementById("role-student").onclick = () => { roleModal.style.display = "none"; openStudentModal(); };
+
+  // Instructor modal
+  function openInstructorModal() {
+      instructorModal.style.display = "flex";
+      document.getElementById("password-section").style.display = "block";
+      document.getElementById("class-form-section").style.display = "none";
+  }
+  document.getElementById("close-instructor").onclick = () => instructorModal.style.display = "none";
+
+  document.getElementById("verify-password").onclick = () => {
+      if (document.getElementById("instructor-password").value === "wellness") {
+          document.getElementById("password-section").style.display = "none";
+          document.getElementById("class-form-section").style.display = "block";
+      } else {
+          alert("Incorrect password");
+      }
+  };
+
+  document.getElementById("add-class").onclick = async () => {
+      const title = document.getElementById("class-title").value;
+      const start_time = document.getElementById("start-time").value;
+      const end_time = document.getElementById("end-time").value;
+      const capacity = parseInt(document.getElementById("capacity").value);
+
+      const { error } = await supabase.from("classes").insert([{ title, instructor: "Instructor", start_time, end_time, capacity }]);
+      if (error) alert(error.message);
+      else {
+          alert("Class added!");
+          instructorSelectedDates.push(selectedDate);
+          renderCalendar(currentMonthOffset);
+      }
+      instructorModal.style.display = "none";
+  };
+
+  // Student modal
+  function openStudentModal() { studentModal.style.display = "flex"; loadStudentClasses(selectedDate); }
+  document.getElementById("close-student").onclick = () => studentModal.style.display = "none";
+
+  async function loadStudentClasses(date) {
+      const { data: classes, error } = await supabase.from("classes")
+          .select("*")
+          .gte("start_time", date + "T00:00")
+          .lte("end_time", date + "T23:59");
+
       const listEl = document.getElementById("student-classes-list");
-      listEl.innerHTML = "Loading…";
-
-      const { data: classes, error } = await supabase
-        .from("classes")
-        .select("*")
-        .gte("start_time", date + "T00:00:00")
-        .lte("start_time", date + "T23:59:59");
-
       listEl.innerHTML = "";
-
-      if (error) { listEl.innerText = "Error: " + error.message; return; }
-      if (!classes || classes.length === 0) { listEl.innerText = "No classes for this day."; return; }
+      if (error) { listEl.innerText = error.message; return; }
+      if (classes.length === 0) { listEl.innerText = "No classes for this day"; return; }
 
       for (const c of classes) {
-        const div = document.createElement("div");
-        div.style.marginBottom = "12px";
-        div.innerHTML = `
-          <strong>${c.title}</strong> by ${c.instructor}<br>
-          ${new Date(c.start_time).toLocaleString()} – ${new Date(c.end_time).toLocaleString()}
-          <br><button data-id="${c.id}">Book</button>
-        `;
-        div.querySelector("button").onclick = async () => {
-          const studentName = prompt("Enter your name to book this class:");
-          if (!studentName) return;
-          const { error: bookErr } = await supabase
-            .from("bookings")
-            .insert([{ class_id: c.id, student_name: studentName }]);
-          alert(bookErr ? "Error: " + bookErr.message : "Booked successfully! 🎉");
-        };
-        listEl.appendChild(div);
+          const div = document.createElement("div");
+          div.innerHTML = `<strong>${c.title}</strong> by ${c.instructor}<br>${new Date(c.start_time).toLocaleString()} - ${new Date(c.end_time).toLocaleString()} <button>Book</button>`;
+          div.querySelector("button").onclick = async () => {
+              const studentName = prompt("Enter your name to book this class:");
+              if (!studentName) return;
+              const { error } = await supabase.from("bookings").insert([{ class_id: c.id, student_name: studentName }]);
+              alert(error ? error.message : "Booked!");
+              loadStudentClasses(date);
+          };
+          listEl.appendChild(div);
       }
-    }
-
-    // ── Initial render ──────────────────────────────────────────
-    renderCalendar(currentMonthOffset);
-  </script>
+  }
+</script>
 </body>
 </html>

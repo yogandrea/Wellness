@@ -450,7 +450,7 @@
       <div style="text-align:right; max-width:800px; margin:8px auto 0; padding-right:4px;">
         <span id="admin-trigger"
           style="font-size:10px; color:#ccc; cursor:pointer; user-select:none;">
-          @Copyright
+          2026@Copyright
         </span>
       </div>
     </section>
@@ -910,7 +910,10 @@
                 "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/super-worker",
                 {
                   method:  "POST",
-                  headers: { "Content-Type": "application/json" },
+                  headers: {
+                    "Content-Type":  "application/json",
+                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U",
+                  },
                   body: JSON.stringify({
                     student_name:  studentInfo.name,
                     student_email: studentInfo.email,

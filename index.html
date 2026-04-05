@@ -6,6 +6,19 @@
   <title>Home - Wellness Events</title>
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Booking Section Styles */
+    #bookings { padding:20px; }
+    #calendar-container { display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; max-width:800px; margin:auto; }
+    .calendar-day { border:1px solid #ccc; padding:10px; text-align:center; cursor:pointer; border-radius:5px; }
+    .calendar-day:hover { background:#f0f0f0; }
+    .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000; }
+    .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:400px; position:relative; }
+    .close { position:absolute; top:10px; right:10px; cursor:pointer; font-size:20px; font-weight:bold; }
+    form input, form button { margin:5px 0; padding:8px; width:100%; }
+    button { cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:4px; }
+    button:hover { background:#45a049; }
+  </style>
 </head>
 
 <body>
@@ -13,6 +26,7 @@
     <a href="index.html">Home</a>
     <a href="schedule.html">Schedule</a>
     <a href="services.html">Services</a>
+    <a href="#bookings">Bookings</a>
     <a href="about.html">About Us</a>
   </nav>
 
@@ -26,10 +40,46 @@
 
     <!-- ✅ Debug info -->
     <pre id="visitor-debug" style="text-align:center; margin-top:10px; color:red;"></pre>
+
+    <!-- ---------------- Bookings Section ---------------- -->
+    <section id="bookings">
+      <h2 style="text-align:center;">Bookings</h2>
+      <div id="calendar-container"></div>
+
+      <!-- Instructor Modal -->
+      <div id="instructor-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+          <span class="close" id="close-instructor">&times;</span>
+          <h3>Instructor: Add Class</h3>
+          <div id="password-section">
+            <input type="password" id="instructor-password" placeholder="Enter password">
+            <button id="verify-password">Verify</button>
+          </div>
+          <div id="class-form-section" style="display:none;">
+            <input type="text" id="class-title" placeholder="Class Title">
+            <input type="datetime-local" id="start-time">
+            <input type="datetime-local" id="end-time">
+            <input type="number" id="capacity" value="10" min="1">
+            <button id="add-class">Add Class</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Modal -->
+      <div id="student-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+          <span class="close" id="close-student">&times;</span>
+          <h3>Available Classes</h3>
+          <div id="student-classes-list"></div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <script src="js/main.js"></script>
 
+  <!-- ---------------- Visitor Counter Script ---------------- -->
   <script>
 async function loadVisitors() {
   const counterEl = document.getElementById("visitor-counter");
@@ -38,12 +88,7 @@ async function loadVisitors() {
   try {
     const res = await fetch(
       "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }
+      { method: "POST", headers: { "Content-Type": "application/json" } }
     );
 
     const data = await res.json();
@@ -65,5 +110,93 @@ async function loadVisitors() {
 
 loadVisitors();
   </script>
+
+  <!-- ---------------- Bookings Script ---------------- -->
+  <script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabaseUrl = "https://utpwbrbpdyrwqlheaknm.supabase.co";
+const supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY"; // replace with your anon key
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+const calendarContainer = document.getElementById("calendar-container");
+const instructorModal = document.getElementById("instructor-modal");
+const studentModal = document.getElementById("student-modal");
+let selectedDate = null;
+
+// ---------------- Render Monthly Calendar ----------------
+function renderCalendar(monthOffset=0){
+  calendarContainer.innerHTML = "";
+  const now = new Date();
+  const month = now.getMonth() + monthOffset;
+  const year = now.getFullYear();
+  const lastDay = new Date(year, month+1, 0);
+  for(let d=1; d<=lastDay.getDate(); d++){
+    const date = new Date(year, month, d);
+    const dayDiv = document.createElement("div");
+    dayDiv.classList.add("calendar-day");
+    dayDiv.innerText = d;
+    dayDiv.dataset.date = date.toISOString().split("T")[0];
+    dayDiv.addEventListener("click", ()=>{ selectedDate = dayDiv.dataset.date; openDayModal(selectedDate); });
+    calendarContainer.appendChild(dayDiv);
+  }
+}
+renderCalendar();
+
+// ---------------- Open Modal Depending on Role ----------------
+function openDayModal(date){
+  const role = prompt("Are you an instructor? (yes/no)").toLowerCase();
+  if(role==="yes"){
+    instructorModal.style.display="flex";
+    document.getElementById("password-section").style.display="block";
+    document.getElementById("class-form-section").style.display="none";
+  } else {
+    studentModal.style.display="flex";
+    loadStudentClasses(date);
+  }
+}
+
+// ---------------- Instructor Modal Logic ----------------
+document.getElementById("close-instructor").onclick = ()=> instructorModal.style.display="none";
+document.getElementById("verify-password").onclick = ()=>{
+  const pw = document.getElementById("instructor-password").value;
+  if(pw==="wellness"){
+    document.getElementById("password-section").style.display="none";
+    document.getElementById("class-form-section").style.display="block";
+  } else { alert("Incorrect password"); }
+};
+document.getElementById("add-class").onclick = async ()=>{
+  const title = document.getElementById("class-title").value;
+  const start_time = document.getElementById("start-time").value;
+  const end_time = document.getElementById("end-time").value;
+  const capacity = parseInt(document.getElementById("capacity").value);
+  const { error } = await supabase.from("classes").insert([{ title, instructor:"Instructor", start_time, end_time, capacity }]);
+  if(error) alert(error.message); else alert("Class added!");
+  instructorModal.style.display="none";
+};
+
+// ---------------- Student Modal Logic ----------------
+document.getElementById("close-student").onclick = ()=> studentModal.style.display="none";
+async function loadStudentClasses(date){
+  const { data: classes, error } = await supabase.from("classes").select("*").gte("start_time", date+"T00:00").lte("end_time", date+"T23:59");
+  const listEl = document.getElementById("student-classes-list");
+  listEl.innerHTML = "";
+  if(error) { listEl.innerText = error.message; return; }
+  if(classes.length===0){ listEl.innerText="No classes for this day"; return; }
+  for(const c of classes){
+    const div = document.createElement("div");
+    div.innerHTML = `<strong>${c.title}</strong> by ${c.instructor} <br> ${new Date(c.start_time).toLocaleString()} - ${new Date(c.end_time).toLocaleString()} <button>Book</button>`;
+    div.querySelector("button").onclick = async ()=>{
+      const studentName = prompt("Enter your name to book this class:");
+      if(!studentName) return;
+      const { error } = await supabase.from("bookings").insert([{ class_id:c.id, student_name:studentName }]);
+      alert(error ? error.message : "Booked!");
+      loadStudentClasses(date);
+    };
+    listEl.appendChild(div);
+  }
+}
+  </script>
+
 </body>
 </html>

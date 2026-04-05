@@ -212,17 +212,17 @@
   <!-- ── Right: Schedule docs + Event gallery ─────────── -->
   <div class="right-column">
 
-    <!-- Schedule Documents -->
+    <!-- Event Grid (images + PDFs from media/Events) -->
     <div class="schedule-section">
-      <h2>📋 Schedule &amp; Resources</h2>
+      <h2>📸 Events &amp; Gallery</h2>
       <div id="schedule-grid" class="schedule-grid">
-        <p class="sched-loading">Loading schedule files…</p>
+        <p class="sched-loading">Loading events…</p>
       </div>
     </div>
 
-    <!-- Event Gallery -->
+    <!-- Large image slider (synced with grid above) -->
     <div class="gallery-wrapper">
-      <h2>📸 Event Gallery</h2>
+      <h2>🖼 Full View</h2>
       <div class="gallery-container">
         <button id="prevBtn">&#9664;</button>
         <div class="gallery-frame">
@@ -249,12 +249,10 @@
 // ============================================================
 const GH_USER          = "yogandrea";
 const GH_REPO          = "Wellness";
-const SCHEDULE_FOLDER  = "media/Schedule";   // folder with jpgs + pdfs
-const EVENTS_FOLDER    = "media/Events";     // existing event gallery folder
+const EVENTS_FOLDER    = "media/Events";   // used for BOTH grid display and gallery
 
 const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp"];
 const PDF_EXT    = ".pdf";
-
 const PDF_ICON   = "https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg";
 
 // ============================================================
@@ -268,19 +266,27 @@ async function ghFetch(folder) {
 }
 
 // ============================================================
-// 1. SCHEDULE DOCUMENTS — auto-load jpg/jpeg/pdf from folder
+// 1. EVENT GRID — shows ALL images + PDFs from media/Events
+//    as a browsable thumbnail grid (replaces separate schedule)
 // ============================================================
-async function loadSchedule() {
+let galleryImages = [];   // image-only subset for the lightbox nav
+let galleryIndex  = 0;
+
+async function loadEventsGrid() {
   const grid = document.getElementById("schedule-grid");
   try {
-    const files = await ghFetch(SCHEDULE_FOLDER);
+    const files = await ghFetch(EVENTS_FOLDER);
     const items = files.filter(f => {
       const n = f.name.toLowerCase();
       return IMAGE_EXTS.some(e => n.endsWith(e)) || n.endsWith(PDF_EXT);
     });
 
+    // Also populate the image-only array for prev/next gallery nav
+    galleryImages = items.filter(f => IMAGE_EXTS.some(e => f.name.toLowerCase().endsWith(e)));
+
     if (items.length === 0) {
-      grid.innerHTML = `<p class="sched-loading">No schedule files found in <code>${SCHEDULE_FOLDER}</code>.</p>`;
+      grid.innerHTML = `<p class="sched-loading">No event files found in <code>${EVENTS_FOLDER}</code>.</p>`;
+      document.querySelector(".gallery-wrapper").style.display = "none";
       return;
     }
 
@@ -296,11 +302,13 @@ async function loadSchedule() {
         <div class="sched-label" title="${f.name}">${f.name}</div>
       `;
 
-      // Click: open PDF in new tab, lightbox for images
       card.addEventListener("click", () => {
         if (isPdf) {
           window.open(f.download_url, "_blank");
         } else {
+          // Open in lightbox AND sync the gallery slider to this image
+          const imgIdx = galleryImages.findIndex(g => g.name === f.name);
+          if (imgIdx !== -1) { galleryIndex = imgIdx; showGalleryImage(galleryIndex); }
           openLightbox(f.download_url, f.name);
         }
       });
@@ -308,54 +316,15 @@ async function loadSchedule() {
       grid.appendChild(card);
     });
 
+    // Show first image in the slider too
+    if (galleryImages.length > 0) showGalleryImage(0);
+    else document.querySelector(".gallery-wrapper").style.display = "none";
+
   } catch (err) {
     grid.innerHTML = `<p class="sched-loading" style="color:#c00;">
-      ⚠️ Could not load schedule: ${err.message}<br>
-      Make sure the folder <code>${SCHEDULE_FOLDER}</code> exists in your repo.
+      ⚠️ Could not load events: ${err.message}
     </p>`;
-    console.error("[Schedule]", err);
-  }
-}
-
-// ============================================================
-// Lightbox
-// ============================================================
-function openLightbox(src, name) {
-  document.getElementById("lightbox-img").src     = src;
-  document.getElementById("lightbox-caption").innerText = name;
-  document.getElementById("lightbox").classList.add("open");
-}
-document.getElementById("lightbox-close").onclick = closeLightbox;
-document.getElementById("lightbox").addEventListener("click", e => {
-  if (e.target === document.getElementById("lightbox")) closeLightbox();
-});
-function closeLightbox() {
-  document.getElementById("lightbox").classList.remove("open");
-  document.getElementById("lightbox-img").src = "";
-}
-
-// ============================================================
-// 2. EVENT GALLERY — auto-load jpg/jpeg from media/Events
-// ============================================================
-let galleryImages = [];
-let galleryIndex  = 0;
-
-async function loadGallery() {
-  try {
-    const files = await ghFetch(EVENTS_FOLDER);
-    galleryImages = files.filter(f => {
-      const n = f.name.toLowerCase();
-      return IMAGE_EXTS.some(e => n.endsWith(e));
-    });
-
-    if (galleryImages.length === 0) {
-      document.querySelector(".gallery-wrapper").style.display = "none";
-      return;
-    }
-    showGalleryImage(0);
-  } catch (err) {
-    console.warn("[Gallery] Could not load:", err.message);
-    document.querySelector(".gallery-wrapper").style.display = "none";
+    console.error("[Events]", err);
   }
 }
 
@@ -389,6 +358,37 @@ galImg.addEventListener("click", () => {
 });
 
 // ============================================================
+// Lightbox
+// ============================================================
+function openLightbox(src, name) {
+  document.getElementById("lightbox-img").src = src;
+  document.getElementById("lightbox-caption").innerText = name;
+  document.getElementById("lightbox").classList.add("open");
+}
+document.getElementById("lightbox-close").onclick = closeLightbox;
+document.getElementById("lightbox").addEventListener("click", e => {
+  if (e.target === document.getElementById("lightbox")) closeLightbox();
+});
+document.addEventListener("keydown", e => {
+  if (!document.getElementById("lightbox").classList.contains("open")) return;
+  if (e.key === "ArrowRight" && galleryImages.length) {
+    galleryIndex = (galleryIndex + 1) % galleryImages.length;
+    showGalleryImage(galleryIndex);
+    openLightbox(galleryImages[galleryIndex].download_url, galleryImages[galleryIndex].name);
+  }
+  if (e.key === "ArrowLeft" && galleryImages.length) {
+    galleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length;
+    showGalleryImage(galleryIndex);
+    openLightbox(galleryImages[galleryIndex].download_url, galleryImages[galleryIndex].name);
+  }
+  if (e.key === "Escape") closeLightbox();
+});
+function closeLightbox() {
+  document.getElementById("lightbox").classList.remove("open");
+  document.getElementById("lightbox-img").src = "";
+}
+
+// ============================================================
 // 3. GOOGLE SHEET SIGNUP
 // ============================================================
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynn2lIa8I--zwis12YttudV00gPyZXmAsW_m8h1z14o3zfj1ScMK76Q6ZKl7UySo1N/exec";
@@ -418,8 +418,7 @@ document.getElementById("signupForm").addEventListener("submit", async function(
 // ============================================================
 // Init
 // ============================================================
-loadSchedule();
-loadGallery();
+loadEventsGrid();   // loads media/Events into both grid + slider
 </script>
 </body>
 </html>

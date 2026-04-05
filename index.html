@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" href="favicon.ico">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home - Wellness Events</title>
+  <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -23,25 +23,44 @@
     <div id="visitor-counter" style="text-align:center; margin-top:20px; font-size:18px;">
       🌍 Loading visitors...
     </div>
+
+    <!-- ✅ Debug log -->
+    <pre id="visitor-debug" style="text-align:center; margin-top:10px; color:red;"></pre>
   </main>
 
   <script src="js/main.js"></script>
 
   <!-- ✅ Visitor Tracking Script -->
- <script>
+  <script>
 async function loadVisitors() {
   const counterEl = document.getElementById("visitor-counter");
+  const debugEl = document.getElementById("visitor-debug");
 
   try {
     const res = await fetch(
-      "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track"
+      "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
+      {
+        method: "POST",  // Use POST to trigger insert
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
     );
 
     const data = await res.json();
-    counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
+
+    if (data.error) {
+      counterEl.innerText = "🌍 Visitors unavailable";
+      debugEl.innerText = "Error: " + data.error;
+    } else {
+      counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
+      debugEl.innerText = ""; // clear debug
+    }
+
   } catch (err) {
     console.error(err);
     counterEl.innerText = "🌍 Visitors unavailable";
+    debugEl.innerText = "Fetch Error: " + err.message;
   }
 }
 

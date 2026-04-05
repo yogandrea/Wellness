@@ -11,7 +11,7 @@
 /* ===== Container for signup + gallery ===== */
 .events-container{
     display:flex;
-    flex-wrap:wrap;  /* stack on small screens */
+    flex-wrap:wrap;
     gap:24px;
     justify-content:center;
     align-items:flex-start;
@@ -20,7 +20,7 @@
 
 /* ===== Signup Box ===== */
 .signup-box{
-    flex:1 1 300px;  /* grows, shrinks, minimum 300px */
+    flex:1 1 300px;
     background:white;
     padding:20px;
     border-radius:12px;
@@ -46,7 +46,7 @@
 
 /* ===== Gallery Wrapper ===== */
 .gallery-wrapper{
-    flex:2 1 500px;  /* larger area for gallery */
+    flex:2 1 500px;
 }
 
 /* ===== Gallery Layout ===== */
@@ -78,7 +78,6 @@
     object-fit:contain;
 }
 
-/* arrows */
 .gallery-container button{
     font-size:26px;
     padding:14px 18px;
@@ -97,12 +96,12 @@
   <a href="index.html">Home</a>
   <a href="schedule.html">Schedule</a>
   <a href="services.html">Services</a>
+  <a href="index.html#bookings">Bookings</a>
   <a href="about.html">About Us</a>
 </nav>
 
 <main class="schedule">
 
-<!-- ================= SIDE-BY-SIDE SIGNUP + GALLERY ================= -->
 <div class="events-container">
 
   <!-- Registration Form -->
@@ -120,11 +119,11 @@
   <div class="gallery-wrapper">
     <h2>Event Gallery</h2>
     <div class="gallery-container">
-      <button id="prevBtn">◀</button>
+      <button id="prevBtn">&#9664;</button>
       <div class="gallery-frame">
         <img id="galleryImage" alt="Event Photo">
       </div>
-      <button id="nextBtn">▶</button>
+      <button id="nextBtn">&#9654;</button>
     </div>
   </div>
 
@@ -133,97 +132,98 @@
 </main>
 
 <script>
-// ================= IMAGE LIST =================
-// Directly reference all JPGs in media/Events
-const images = [
-  "media/Events/event1.jpg",
-  "media/Events/event2.jpg",
-  "media/Events/event3.jpg"
-  // add more filenames here as you upload them
-];
+// ================= IMAGE GALLERY =================
+const username = "yogandrea";
+const repo     = "Wellness";
+const folder   = "media/Events";
+const apiURL   = `https://api.github.com/repos/${username}/${repo}/contents/${folder}`;
 
+let images       = [];
 let currentIndex = 0;
-const imgEl = document.getElementById("galleryImage");
 
-// preload images
-images.forEach(src => {
-    const img = new Image();
-    img.src = src;
-});
+async function loadImages() {
+  try {
+    const res  = await fetch(apiURL);
+    const data = await res.json();
 
-// show image
-function showImage(i){
-    imgEl.src = images[i];
+    images = data
+      .filter(f => f.name.toLowerCase().endsWith(".jpg"))
+      .sort((a, b) => a.name.localeCompare(b.name)); // stable alphabetical order
+
+    if (images.length === 0) return;
+    showImage(0);
+  } catch (err) {
+    console.error("Failed to load gallery images:", err);
+  }
 }
 
-// navigation
+function showImage(i) {
+  const img = document.getElementById("galleryImage");
+  if (images[i]) img.src = images[i].download_url;
+}
+
 document.getElementById("prevBtn").onclick = () => {
-    currentIndex = (currentIndex - 1 + images.length) % images.length;
-    showImage(currentIndex);
+  currentIndex = (currentIndex - 1 + images.length) % images.length;
+  showImage(currentIndex);
 };
 document.getElementById("nextBtn").onclick = () => {
-    currentIndex = (currentIndex + 1) % images.length;
-    showImage(currentIndex);
+  currentIndex = (currentIndex + 1) % images.length;
+  showImage(currentIndex);
 };
 
-// swipe support for mobile
+// Swipe support
 let startX = 0;
-imgEl.addEventListener("touchstart", e => startX = e.touches[0].clientX);
-imgEl.addEventListener("touchend", e => {
-    const dx = e.changedTouches[0].clientX - startX;
-    if(Math.abs(dx) > 40){
-        if(dx > 0) document.getElementById("prevBtn").click();
-        else document.getElementById("nextBtn").click();
-    }
+const imgEl = document.getElementById("galleryImage");
+imgEl.addEventListener("touchstart", e => { startX = e.touches[0].clientX; });
+imgEl.addEventListener("touchend",   e => {
+  const dx = e.changedTouches[0].clientX - startX;
+  if (Math.abs(dx) > 40) {
+    if (dx > 0) document.getElementById("prevBtn").click();
+    else        document.getElementById("nextBtn").click();
+  }
 });
 
-// tap to fullscreen zoom
+// Tap to fullscreen
 imgEl.addEventListener("click", () => {
-    if(imgEl.requestFullscreen) imgEl.requestFullscreen();
+  if (imgEl.requestFullscreen) imgEl.requestFullscreen();
 });
+
+loadImages();
 
 // ================= GOOGLE SHEET SUBMIT =================
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynn2lIa8I--zwis12YttudV00gPyZXmAsW_m8h1z14o3zfj1ScMK76Q6ZKl7UySo1N/exec";
-document.getElementById("signupForm").addEventListener("submit", async function(e){
-    e.preventDefault();
 
-    const name = document.getElementById("name").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const msg = document.getElementById("msg");
+document.getElementById("signupForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
 
-    if(!name || !email){
-        msg.innerText = "Please fill all fields";
-        msg.style.color = "red";
-        return;
-    }
+  const name  = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const msg   = document.getElementById("msg");
 
-    msg.innerText = "Submitting...";
-    msg.style.color = "black";
+  if (!name || !email) {
+    msg.innerText    = "Please fill all fields";
+    msg.style.color  = "red";
+    return;
+  }
 
-    try{
-        await fetch(SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type":"application/json" },
-            body: JSON.stringify({
-                name:name,
-                email:email,
-                page:"schedule"
-            })
-        });
+  msg.innerText   = "Submitting...";
+  msg.style.color = "black";
 
-        msg.innerText = "Registration received ✔";
-        msg.style.color = "green";
-        this.reset();
-
-    } catch(err){
-        msg.innerText = "Submission failed ❌";
-        msg.style.color = "red";
-    }
+  try {
+    await fetch(SCRIPT_URL, {
+      method:  "POST",
+      mode:    "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ name, email, page: "schedule" })
+    });
+    msg.innerText   = "Registration received ✔";
+    msg.style.color = "green";
+    this.reset();
+  } catch (err) {
+    msg.innerText   = "Submission failed ❌";
+    msg.style.color = "red";
+  }
 });
-
-// show first image
-showImage(currentIndex);
 </script>
 
 </body>

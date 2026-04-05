@@ -3,9 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home - Wellness Events</title>
+  <title>Wellness Events - Booking</title>
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { font-family: sans-serif; margin:0; padding:0; }
+    .nav { display:flex; gap:15px; padding:10px; background:#f1f1f1; flex-wrap:wrap; }
+    .nav a { text-decoration:none; color:#333; font-weight:bold; }
+    main { padding:15px; }
+    h2 { margin-top:20px; }
+    form input, form button { margin:5px 0; padding:8px; width:100%; max-width:400px; }
+    #classes-list div { border:1px solid #ccc; padding:10px; border-radius:8px; margin-bottom:10px; }
+    button { cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:4px; }
+    button:hover { background:#45a049; }
+    @media (min-width:600px){ form input, form button { width:400px; } }
+  </style>
 </head>
 <body>
   <nav class="nav">
@@ -15,51 +27,97 @@
     <a href="about.html">About Us</a>
   </nav>
 
-  <main class="home">
-    <div id="montage-container" class="montage-container"></div>
-
+  <main>
     <!-- Visitor Counter -->
-    <div id="visitor-counter" style="text-align:center; margin-top:20px; font-size:18px;">
+    <div id="visitor-counter" style="text-align:center; font-size:18px; margin-bottom:20px;">
       🌍 Loading visitors...
     </div>
 
-    <!-- Debug info -->
-    <pre id="visitor-debug" style="text-align:center; margin-top:10px; color:red;"></pre>
+    <!-- Instructor: Add Class -->
+    <h2>Create Class (Instructor)</h2>
+    <form id="add-class-form">
+      <input type="text" id="class-title" placeholder="Class Title" required>
+      <input type="text" id="instructor-name" placeholder="Instructor Name" required>
+      <input type="datetime-local" id="start-time" required>
+      <input type="datetime-local" id="end-time" required>
+      <input type="number" id="capacity" placeholder="Capacity" value="10" min="1" required>
+      <button type="submit">Add Class</button>
+    </form>
+    <div id="add-class-result" style="margin-bottom:20px;color:green;"></div>
+
+    <!-- Student: Available Classes -->
+    <h2>Available Classes</h2>
+    <div id="classes-list"></div>
   </main>
 
-  <script src="js/main.js"></script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  <script>
-async function loadVisitors() {
-  const counterEl = document.getElementById("visitor-counter");
-  const debugEl = document.getElementById("visitor-debug");
+    const supabaseUrl = "https://utpwbrbpdyrwqlheaknm.supabase.co";
+    const supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY"; // replace with your anon key
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  try {
-    const res = await fetch(
-      "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
+    // ---------------- Visitor Counter ----------------
+    async function loadVisitors() {
+      const counterEl = document.getElementById("visitor-counter");
+      try {
+        const res = await fetch("https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track", { method:"POST" });
+        const data = await res.json();
+        counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
+      } catch(err) {
+        console.error(err);
+        counterEl.innerText = "🌍 Visitors unavailable";
       }
-    );
-
-    const data = await res.json();
-
-    if (data.error) {
-      counterEl.innerText = "🌍 Visitors unavailable";
-      debugEl.innerText = "Error: " + data.error;
-    } else {
-      counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
-      debugEl.innerText = "";
     }
-  } catch (err) {
-    console.error(err);
-    counterEl.innerText = "🌍 Visitors unavailable";
-    debugEl.innerText = "Fetch error: " + err.message;
-  }
-}
+    loadVisitors();
 
-loadVisitors();
+    // ---------------- Instructor: Add Class ----------------
+    document.getElementById("add-class-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("class-title").value;
+      const instructor = document.getElementById("instructor-name").value;
+      const start_time = document.getElementById("start-time").value;
+      const end_time = document.getElementById("end-time").value;
+      const capacity = parseInt(document.getElementById("capacity").value);
+
+      const { data, error } = await supabase.from("classes").insert([{ title, instructor, start_time, end_time, capacity }]);
+      document.getElementById("add-class-result").innerText = error ? error.message : "Class added!";
+      loadClasses(); // refresh
+    });
+
+    // ---------------- Student: Load & Book Classes ----------------
+    async function loadClasses() {
+      const { data: classes, error } = await supabase.from("classes").select("*").order("start_time");
+      const listEl = document.getElementById("classes-list");
+      listEl.innerHTML = "";
+      if (error) { listEl.innerText = "Failed to load classes: " + error.message; return; }
+
+      for (const c of classes) {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <strong>${c.title}</strong> by ${c.instructor} <br>
+          ${new Date(c.start_time).toLocaleString()} - ${new Date(c.end_time).toLocaleString()} <br>
+          Capacity: ${c.capacity} <button>Book</button>
+        `;
+        const button = div.querySelector("button");
+        button.addEventListener("click", async () => {
+          const studentName = prompt("Enter your name to book this class:");
+          if (!studentName) return;
+
+          // Check current bookings for this class
+          const { data: existing, error: err1 } = await supabase.from("bookings").select("*").eq("class_id", c.id);
+          if (err1) { alert(err1.message); return; }
+          if (existing.length >= c.capacity) { alert("Class is full!"); return; }
+
+          // Insert booking
+          const { error } = await supabase.from("bookings").insert([{ class_id:c.id, student_name:studentName }]);
+          alert(error ? error.message : "Booked successfully!");
+          loadClasses(); // refresh
+        });
+        listEl.appendChild(div);
+      }
+    }
+    loadClasses();
   </script>
 </body>
 </html>

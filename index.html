@@ -103,6 +103,7 @@
 
   <!-- Visitor Counter Script -->
   <script>
+  <script>
 async function loadVisitors() {
   const counterEl = document.getElementById("visitor-counter");
   const debugEl = document.getElementById("visitor-debug");
@@ -110,10 +111,7 @@ async function loadVisitors() {
   try {
     const res = await fetch(
       "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" } // ❌ no apikey
-      }
+      { method: "POST", headers: { "Content-Type": "application/json" } }
     );
 
     const data = await res.json();

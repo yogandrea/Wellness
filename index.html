@@ -7,14 +7,16 @@
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* Bookings Calendar */
+    /* Bookings Calendar Styles */
     #bookings { padding:20px; margin-top:50px; }
     #calendar-header { display:flex; justify-content: space-between; align-items:center; max-width:800px; margin:10px auto; }
     #calendar-container { display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; max-width:800px; margin:auto; }
     .calendar-day { border:1px solid #ccc; padding:10px; text-align:center; cursor:pointer; border-radius:5px; min-height:50px; }
     .calendar-day:hover { background:#f0f0f0; }
-    .calendar-day.class-day { background-color:#d4edda; font-weight:bold; }
-    .calendar-day.today { border:2px solid #FF5722; }
+    .calendar-day.has-class { background-color:#d4edda; font-weight:bold; } /* Light green for classes */
+    .calendar-day.selected-range { background-color:#add8e6; } /* Blue for selected range */
+
+    /* Modal Styles */
     .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000; }
     .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:400px; position:relative; }
     .close { position:absolute; top:10px; right:10px; cursor:pointer; font-size:20px; font-weight:bold; }
@@ -90,10 +92,6 @@
           <span class="close" id="close-student">&times;</span>
           <h3>Available Classes</h3>
           <div id="student-classes-list"></div>
-          <div id="student-name-section" style="display:none;">
-            <input type="text" id="student-name-input" placeholder="Enter your name">
-            <button id="submit-student-booking">Book Class</button>
-          </div>
         </div>
       </div>
     </section>
@@ -103,34 +101,16 @@
 
   <!-- Visitor Counter Script -->
   <script>
-  <script>
 async function loadVisitors() {
   const counterEl = document.getElementById("visitor-counter");
   const debugEl = document.getElementById("visitor-debug");
-
   try {
-    const res = await fetch(
-      "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
-      { method: "POST", headers: { "Content-Type": "application/json" } }
-    );
-
+    const res = await fetch("https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track", { method:"POST", headers:{ "Content-Type":"application/json" } });
     const data = await res.json();
-
-    if (data.error) {
-      counterEl.innerText = "🌍 Visitors unavailable";
-      debugEl.innerText = "Error: " + data.error;
-    } else {
-      counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
-      debugEl.innerText = "";
-    }
-
-  } catch (err) {
-    console.error(err);
-    counterEl.innerText = "🌍 Visitors unavailable";
-    debugEl.innerText = "Fetch error: " + err.message;
-  }
+    if(data.error){ counterEl.innerText="🌍 Visitors unavailable"; debugEl.innerText="Error:"+data.error; }
+    else { counterEl.innerText="🌍 Unique Visitors:"+ (data.unique??0); debugEl.innerText=""; }
+  } catch(err){ counterEl.innerText="🌍 Visitors unavailable"; debugEl.innerText="Fetch error:"+err.message; }
 }
-
 loadVisitors();
   </script>
 
@@ -139,7 +119,7 @@ loadVisitors();
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const supabaseUrl = "https://utpwbrbpdyrwqlheaknm.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sI..."; // Your anon key
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const calendarContainer = document.getElementById("calendar-container");
@@ -147,29 +127,27 @@ const calendarMonthLabel = document.getElementById("calendar-month");
 const roleModal = document.getElementById("role-modal");
 const instructorModal = document.getElementById("instructor-modal");
 const studentModal = document.getElementById("student-modal");
-const studentNameSection = document.getElementById("student-name-section");
-const studentNameInput = document.getElementById("student-name-input");
-const submitStudentBooking = document.getElementById("submit-student-booking");
 
 let selectedDate = null;
 let currentMonthOffset = 0;
-let selectedClassId = null;
+let instructorSelectedDates = []; // for multi-date selection
 
-// Render calendar with color-coded days
+// Render calendar with classes & selected range
 async function renderCalendar(offset=0){
   calendarContainer.innerHTML="";
   const now = new Date();
-  const month = new Date(now.getFullYear(), now.getMonth() + offset,1).getMonth();
-  const year = new Date(now.getFullYear(), now.getMonth() + offset,1).getFullYear();
-  const firstDay = new Date(year, month,1);
-  const lastDay = new Date(year, month+1,0);
+  const month = now.getMonth()+offset;
+  const year = now.getFullYear();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month+1, 0);
   calendarMonthLabel.innerText = firstDay.toLocaleString('default',{month:'long', year:'numeric'});
 
+  // Fetch classes for month
   const { data: monthClasses } = await supabase
     .from("classes")
     .select("start_time")
-    .gte("start_time", new Date(year, month,1).toISOString())
-    .lt("start_time", new Date(year, month+1,1).toISOString());
+    .gte("start_time", new Date(year, month, 1).toISOString())
+    .lt("start_time", new Date(year, month+1, 1).toISOString());
 
   const classDays = monthClasses.map(c=>new Date(c.start_time).getDate());
 
@@ -177,83 +155,19 @@ async function renderCalendar(offset=0){
     const date = new Date(year, month, d);
     const dayDiv = document.createElement("div");
     dayDiv.classList.add("calendar-day");
-    dayDiv.innerText = d;
-    dayDiv.dataset.date = date.toISOString().split("T")[0];
+    dayDiv.innerText=d;
+    dayDiv.dataset.date=date.toISOString().split("T")[0];
 
-    if(classDays.includes(d)) dayDiv.classList.add("class-day");
-    if(date.toDateString() === new Date().toDateString()) dayDiv.classList.add("today");
+    if(classDays.includes(d)) dayDiv.classList.add("has-class");
+    if(instructorSelectedDates.includes(dayDiv.dataset.date)) dayDiv.classList.add("selected-range");
 
-    dayDiv.onclick = () => { selectedDate=dayDiv.dataset.date; roleModal.style.display="flex"; };
+    dayDiv.onclick = () => {
+      selectedDate=dayDiv.dataset.date;
+      roleModal.style.display="flex";
+    };
+
     calendarContainer.appendChild(dayDiv);
   }
 }
 renderCalendar(currentMonthOffset);
-document.getElementById("prev-month").onclick=()=>{ currentMonthOffset--; renderCalendar(currentMonthOffset); };
-document.getElementById("next-month").onclick=()=>{ currentMonthOffset++; renderCalendar(currentMonthOffset); };
-
-// Role modal buttons
-document.getElementById("close-role").onclick = () => roleModal.style.display="none";
-document.getElementById("role-instructor").onclick = () => { roleModal.style.display="none"; openInstructorModal(); };
-document.getElementById("role-student").onclick = () => { roleModal.style.display="none"; openStudentModal(); };
-
-// Instructor modal
-function openInstructorModal(){
-  instructorModal.style.display="flex";
-  document.getElementById("password-section").style.display="block";
-  document.getElementById("class-form-section").style.display="none";
-}
-document.getElementById("close-instructor").onclick = () => instructorModal.style.display="none";
-document.getElementById("verify-password").onclick = () => {
-  if(document.getElementById("instructor-password").value==="wellness"){
-    document.getElementById("password-section").style.display="none";
-    document.getElementById("class-form-section").style.display="block";
-  } else { alert("Incorrect password"); }
-};
-document.getElementById("add-class").onclick = async () => {
-  const title = document.getElementById("class-title").value;
-  const start_time = document.getElementById("start-time").value;
-  const end_time = document.getElementById("end-time").value;
-  const capacity = parseInt(document.getElementById("capacity").value);
-  const { error } = await supabase.from("classes").insert([{title,instructor:"Instructor",start_time,end_time,capacity}]);
-  if(error) alert(error.message); else alert("Class added!");
-  instructorModal.style.display="none";
-  renderCalendar(currentMonthOffset);
-};
-
-// Student modal
-function openStudentModal(){ studentModal.style.display="flex"; loadStudentClasses(selectedDate); studentNameSection.style.display="none"; }
-document.getElementById("close-student").onclick = () => studentModal.style.display="none";
-
-async function loadStudentClasses(date){
-  const { data: classes, error } = await supabase.from("classes")
-    .select("*")
-    .gte("start_time", date+"T00:00")
-    .lte("end_time", date+"T23:59");
-  const listEl = document.getElementById("student-classes-list");
-  listEl.innerHTML="";
-  if(error){ listEl.innerText=error.message; return; }
-  if(classes.length===0){ listEl.innerText="No classes for this day"; return; }
-
-  for(const c of classes){
-    const div = document.createElement("div");
-    div.innerHTML=`<strong>${c.title}</strong> by ${c.instructor}<br>${new Date(c.start_time).toLocaleTimeString()} - ${new Date(c.end_time).toLocaleTimeString()} <button>Book</button>`;
-    const bookBtn = div.querySelector("button");
-    bookBtn.onclick = () => {
-      selectedClassId = c.id;
-      studentNameSection.style.display="block";
-    };
-    listEl.appendChild(div);
-  }
-}
-
-// Submit student booking
-submitStudentBooking.onclick = async () => {
-  const studentName = studentNameInput.value.trim();
-  if(!studentName) { alert("Enter your name"); return; }
-  const { error } = await supabase.from("bookings").insert([{class_id:selectedClassId, student_name:studentName}]);
-  alert(error ? error.message : "Booked!");
-  studentNameInput.value=""; studentNameSection.style.display="none"; loadStudentClasses(selectedDate);
-};
-  </script>
-</body>
-</html>
+document.getElementById("prev-month").onclick=()=>{ currentMonthOffset--; render

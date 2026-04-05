@@ -786,21 +786,56 @@
       const checked = [...document.querySelectorAll("#admin-classes-list input[type=checkbox]:checked")];
       if (checked.length === 0) { alert("No classes selected."); return; }
 
-      const confirmMsg = `Delete ${checked.length} class${checked.length > 1 ? "es" : ""}? This cannot be undone.`;
+      const confirmMsg = `Delete ${checked.length} class${checked.length > 1 ? "es" : ""}?\nThis also removes all student bookings for these classes.\nThis cannot be undone.`;
       if (!confirm(confirmMsg)) return;
 
       const ids = checked.map(cb => cb.dataset.id);
+      const btn = $("admin-delete-selected");
+      btn.disabled    = true;
+      btn.textContent = "Deleting…";
 
-      // Delete associated bookings first (foreign key), then the classes
-      await supabase.from("bookings").delete().in("class_id", ids);
-      const { error } = await supabase.from("classes").delete().in("id", ids);
+      try {
+        // Step 1: delete linked bookings first
+        const { error: bookErr } = await supabase
+          .from("bookings")
+          .delete()
+          .in("class_id", ids);
 
-      if (error) {
-        alert("Delete failed: " + error.message);
-      } else {
-        alert(`${checked.length} class${checked.length > 1 ? "es" : ""} deleted. ✅`);
-        await loadAdminClasses();  // refresh the list
-        renderCalendar();          // refresh calendar
+        if (bookErr) {
+          console.warn("Booking delete error (may be OK if none exist):", bookErr.message);
+        }
+
+        // Step 2: delete the classes — use .select() to get back deleted rows
+        // so we can confirm Supabase actually deleted them (RLS check)
+        const { data: deleted, error: classErr } = await supabase
+          .from("classes")
+          .delete()
+          .in("id", ids)
+          .select("id");  // returns deleted rows — empty if RLS blocked it
+
+        if (classErr) {
+          alert("Delete failed: " + classErr.message);
+          return;
+        }
+
+        if (!deleted || deleted.length === 0) {
+          alert(
+            "⚠️ Delete was blocked by Supabase Row Level Security (RLS).\n\n" +
+            "To fix this, go to your Supabase dashboard:\n" +
+            "Table Editor → classes → Policies\n" +
+            "→ Add a policy: allow DELETE for role 'anon'\n\n" +
+            "Or temporarily disable RLS on the 'classes' table."
+          );
+          return;
+        }
+
+        alert(`${deleted.length} class${deleted.length > 1 ? "es" : ""} deleted. ✅`);
+        await loadAdminClasses();
+        renderCalendar();
+
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = "🗑 Delete Selected Classes";
       }
     });
   </script>

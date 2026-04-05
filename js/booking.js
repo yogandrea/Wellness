@@ -1,11 +1,10 @@
-// booking.js v6
-// - Uses window._supabase set by index.html (no duplicate client)
-// - class_id passed as number (bigint), not uuid
-// - EmailJS for student confirmation emails
+// booking.js v7
+// NO Supabase import — uses window._supabase from index.html to avoid duplicate client warning
+// EmailJS for confirmation emails
 
 const EMAILJS_SERVICE_ID  = "service_6ptnn6y";
 const EMAILJS_TEMPLATE_ID = "template_ii0iyl7";
-const EMAILJS_PUBLIC_KEY  = "IAT9RRoctOp4m";
+const EMAILJS_PUBLIC_KEY  = "177-IAT9RRoctOp4m"; // ← get from dashboard.emailjs.com/admin/account → API Keys
 const ADMIN_EMAIL         = "mailtsjp@gmail.com";
 
 async function sendEmailJS(toEmail, toName, params) {
@@ -22,8 +21,10 @@ async function sendEmailJS(toEmail, toName, params) {
     });
     const txt = await res.text();
     console.log("[EmailJS] →", toEmail, ":", res.status, txt);
+    return { status: res.status, text: txt };
   } catch (e) {
     console.warn("[EmailJS] failed for", toEmail, ":", e.message);
+    return { status: 0, text: e.message };
   }
 }
 
@@ -31,7 +32,7 @@ window.bookClass = async function({ classId, classTitle, classType, classStart, 
   btn.disabled    = true;
   btn.textContent = "Booking...";
 
-  // Wait for supabase to be ready from index.html
+  // Use shared supabase from index.html — no new client created here
   const supabase = window._supabase;
   if (!supabase) {
     btn.disabled    = false;
@@ -41,10 +42,9 @@ window.bookClass = async function({ classId, classTitle, classType, classStart, 
   }
 
   try {
-    // Use RPC with bigint class_id (not uuid)
     const { data: result, error: rpcErr } = await supabase
       .rpc("safe_book_class", {
-        p_class_id:      Number(classId),   // ensure it's a number not string
+        p_class_id:      Number(classId),
         p_student_name:  studentInfo.name,
         p_student_email: studentInfo.email,
         p_student_phone: studentInfo.phone || null
@@ -75,7 +75,7 @@ window.bookClass = async function({ classId, classTitle, classType, classStart, 
       return;
     }
 
-    // Send emails via EmailJS
+    // Send emails
     const fmt = function(iso) {
       return new Date(iso).toLocaleString("en-SG", {
         weekday: "long", day: "numeric", month: "long", year: "numeric",
@@ -92,7 +92,6 @@ window.bookClass = async function({ classId, classTitle, classType, classStart, 
       end_time:      fmt(classEnd)
     };
 
-    // Fire both emails — don't await so UI updates immediately
     sendEmailJS(studentInfo.email, studentInfo.name, emailParams);
     sendEmailJS(ADMIN_EMAIL, "Admin", emailParams);
 
@@ -101,15 +100,11 @@ window.bookClass = async function({ classId, classTitle, classType, classStart, 
     btn.style.background = "#388E3C";
     btn.disabled         = false;
 
-    const startStr = new Date(classStart).toLocaleString("default", {
-      weekday: "long", day: "numeric", month: "long",
-      hour: "2-digit", minute: "2-digit"
-    });
     alert(
       "Booking confirmed!\n\n" +
       "Class: " + classTitle + (classType ? " (" + classType + ")" : "") + "\n" +
       "Instructor: " + instructor + "\n" +
-      "Date: " + startStr + "\n\n" +
+      "Date: " + new Date(classStart).toLocaleString("default", { weekday:"long", day:"numeric", month:"long", hour:"2-digit", minute:"2-digit" }) + "\n\n" +
       "Confirmation email sent to: " + studentInfo.email
     );
 

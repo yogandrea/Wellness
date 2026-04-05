@@ -4,7 +4,7 @@
 
 const EMAILJS_SERVICE_ID  = "service_6ptnn6y";
 const EMAILJS_TEMPLATE_ID = "template_ii0iyl7";
-const EMAILJS_PUBLIC_KEY  = "XHVyvuP_XgMArQeZF"; // ← get from dashboard.emailjs.com/admin/account → API Keys
+const EMAILJS_PUBLIC_KEY  = "XHVyvuP_XgMArQeZF";
 const ADMIN_EMAIL         = "mailtsjp@gmail.com";
 
 async function sendEmailJS(toEmail, toName, params) {

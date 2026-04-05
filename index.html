@@ -7,7 +7,6 @@
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
   <nav class="nav">
     <a href="index.html">Home</a>
@@ -19,12 +18,12 @@
   <main class="home">
     <div id="montage-container" class="montage-container"></div>
 
-    <!-- ✅ Visitor Counter -->
+    <!-- Visitor Counter -->
     <div id="visitor-counter" style="text-align:center; margin-top:20px; font-size:18px;">
       🌍 Loading visitors...
     </div>
 
-    <!-- ✅ Debug info -->
+    <!-- Debug info -->
     <pre id="visitor-debug" style="text-align:center; margin-top:10px; color:red;"></pre>
   </main>
 
@@ -40,9 +39,7 @@ async function loadVisitors() {
       "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        }
+        headers: { "Content-Type": "application/json" }
       }
     );
 
@@ -55,7 +52,6 @@ async function loadVisitors() {
       counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
       debugEl.innerText = "";
     }
-
   } catch (err) {
     console.error(err);
     counterEl.innerText = "🌍 Visitors unavailable";

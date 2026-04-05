@@ -6,21 +6,280 @@
   <title>About Us - Wellness Events</title>
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+
+    /* ── Page ──────────────────────────────────────────────── */
+    .about-page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+
+    .about-page h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .about-intro {
+      text-align: center;
+      color: #666;
+      font-size: 15px;
+      margin-bottom: 40px;
+    }
+
+    /* ── Profiles grid ─────────────────────────────────────── */
+    .profiles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 28px;
+    }
+
+    /* ── Individual profile card ───────────────────────────── */
+    .profile-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.09);
+      overflow: hidden;
+      text-align: center;
+      transition: transform 0.25s, box-shadow 0.25s;
+      cursor: default;
+    }
+    .profile-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.14);
+    }
+
+    /* Photo area */
+    .profile-photo-wrap {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: #f0f0f0;
+    }
+    .profile-photo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+      transition: transform 0.35s;
+    }
+    .profile-card:hover .profile-photo-wrap img {
+      transform: scale(1.04);
+    }
+
+    /* Name derived from filename: "andrea_lim.jpg" → "Andrea Lim" */
+    .profile-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #222;
+      padding: 14px 12px 4px;
+    }
+
+    .profile-role {
+      font-size: 13px;
+      color: #4CAF50;
+      font-weight: 600;
+      padding: 0 12px 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Loading / empty states ────────────────────────────── */
+    .profiles-loading {
+      grid-column: 1/-1;
+      text-align: center;
+      color: #888;
+      padding: 40px 0;
+      font-size: 15px;
+    }
+
+    /* ── Lightbox ──────────────────────────────────────────── */
+    #profile-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px;
+    }
+    #profile-lightbox.open { display: flex; }
+
+    #profile-lightbox img {
+      max-width: min(420px, 90vw);
+      max-height: 70vh;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid #fff;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    #lb-name {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    #lb-role {
+      color: #a5d6a7;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    #lb-close {
+      position: absolute;
+      top: 16px; right: 20px;
+      color: #fff;
+      font-size: 34px;
+      cursor: pointer;
+      font-weight: bold;
+      line-height: 1;
+    }
+    #lb-close:hover { color: #f44; }
+
+    @media (max-width: 600px) {
+      .profiles-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+      .profile-name  { font-size: 14px; }
+    }
+  </style>
 </head>
 <body>
-  <nav class="nav">
-    <a href="index.html">Home</a>
-    <a href="schedule.html">Schedule</a>
-    <a href="services.html">Services</a>
-    <a href="index.html#bookings">Bookings</a>
-    <a href="about.html">About Us</a>
-  </nav>
 
-  <main>
-    <h1>About Us</h1>
-    <!-- Your about content here -->
-  </main>
+<nav class="nav">
+  <a href="index.html">Home</a>
+  <a href="schedule.html">Schedule</a>
+  <a href="services.html">Services</a>
+  <a href="index.html#bookings">Bookings</a>
+  <a href="about.html">About Us</a>
+</nav>
 
-  <script src="js/main.js"></script>
+<main>
+  <div class="about-page">
+    <h1>Meet Our Instructors</h1>
+    <p class="about-intro">
+      Our team of certified wellness professionals are here to guide your journey.
+    </p>
+
+    <div id="profiles-grid" class="profiles-grid">
+      <p class="profiles-loading">Loading instructor profiles…</p>
+    </div>
+  </div>
+</main>
+
+<!-- Profile lightbox (click card for larger view) -->
+<div id="profile-lightbox">
+  <span id="lb-close">&times;</span>
+  <img id="lb-img" src="" alt="">
+  <div id="lb-name"></div>
+  <div id="lb-role">Instructor</div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG — must match your GitHub repo
+// ============================================================
+const GH_USER       = "yogandrea";
+const GH_REPO       = "Wellness";
+const PROFILES_PATH = "Profiles";           // folder in your repo root
+
+const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp"];
+
+// ============================================================
+// Filename → display name
+// "andrea_lim.jpg"  → "Andrea Lim"
+// "dr-john-tan.jpg" → "Dr John Tan"
+// "MaryAnn.jpg"     → "Maryann"  (basic title-case)
+// ============================================================
+function toDisplayName(filename) {
+  return filename
+    .replace(/\.[^.]+$/, "")          // strip extension
+    .replace(/[-_]/g, " ")            // underscores/hyphens → spaces
+    .replace(/\b\w/g, c => c.toUpperCase()); // title-case each word
+}
+
+// ============================================================
+// Load profiles from GitHub API
+// ============================================================
+async function loadProfiles() {
+  const grid = document.getElementById("profiles-grid");
+
+  try {
+    const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${PROFILES_PATH}`;
+    const res  = await fetch(url);
+
+    if (!res.ok) throw new Error(`GitHub API returned ${res.status} for "${PROFILES_PATH}"`);
+
+    const files = await res.json();
+    const images = files.filter(f => IMAGE_EXTS.some(e => f.name.toLowerCase().endsWith(e)));
+
+    if (!Array.isArray(files)) throw new Error("Unexpected response from GitHub API");
+
+    if (images.length === 0) {
+      grid.innerHTML = `
+        <p class="profiles-loading">
+          No profile images found in <code>${PROFILES_PATH}/</code>.<br>
+          Add <code>.jpg</code> or <code>.png</code> files named after each instructor<br>
+          e.g. <code>andrea_lim.jpg</code>
+        </p>`;
+      return;
+    }
+
+    grid.innerHTML = "";
+
+    images.forEach(f => {
+      const name = toDisplayName(f.name);
+
+      const card = document.createElement("div");
+      card.className = "profile-card";
+      card.innerHTML = `
+        <div class="profile-photo-wrap">
+          <img src="${f.download_url}" alt="${name}" loading="lazy">
+        </div>
+        <div class="profile-name">${name}</div>
+        <div class="profile-role">Instructor</div>
+      `;
+
+      card.addEventListener("click", () => openLightbox(f.download_url, name));
+      grid.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error("[Profiles]", err);
+    grid.innerHTML = `
+      <p class="profiles-loading" style="color:#c00;">
+        ⚠️ Could not load profiles: ${err.message}<br><br>
+        Make sure the folder <code>${PROFILES_PATH}/</code> exists in your repo
+        and contains image files.
+      </p>`;
+  }
+}
+
+// ============================================================
+// Lightbox
+// ============================================================
+function openLightbox(src, name) {
+  document.getElementById("lb-img").src  = src;
+  document.getElementById("lb-name").innerText = name;
+  document.getElementById("profile-lightbox").classList.add("open");
+}
+
+document.getElementById("lb-close").onclick = closeLightbox;
+document.getElementById("profile-lightbox").addEventListener("click", function(e) {
+  if (e.target === this) closeLightbox();
+});
+function closeLightbox() {
+  document.getElementById("profile-lightbox").classList.remove("open");
+}
+
+// ============================================================
+// Init
+// ============================================================
+loadProfiles();
+</script>
+
 </body>
 </html>

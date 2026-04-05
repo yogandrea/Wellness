@@ -106,16 +106,33 @@
 async function loadVisitors() {
   const counterEl = document.getElementById("visitor-counter");
   const debugEl = document.getElementById("visitor-debug");
+
   try {
     const res = await fetch(
       "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
-      { method: "POST", headers: { "Content-Type": "application/json", "apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U"} }
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" } // ❌ no apikey
+      }
     );
+
     const data = await res.json();
-    if(data.error){ counterEl.innerText="🌍 Visitors unavailable"; debugEl.innerText="Error:"+data.error; }
-    else { counterEl.innerText="🌍 Unique Visitors:"+ (data.unique??0); debugEl.innerText=""; }
-  } catch(err){ counterEl.innerText="🌍 Visitors unavailable"; debugEl.innerText="Fetch error:"+err.message; }
+
+    if (data.error) {
+      counterEl.innerText = "🌍 Visitors unavailable";
+      debugEl.innerText = "Error: " + data.error;
+    } else {
+      counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
+      debugEl.innerText = "";
+    }
+
+  } catch (err) {
+    console.error(err);
+    counterEl.innerText = "🌍 Visitors unavailable";
+    debugEl.innerText = "Fetch error: " + err.message;
+  }
 }
+
 loadVisitors();
   </script>
 

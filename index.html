@@ -17,8 +17,12 @@
     .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:400px; position:relative; }
     .close { position:absolute; top:10px; right:10px; cursor:pointer; font-size:20px; font-weight:bold; }
     form input, form button { margin:5px 0; padding:8px; width:100%; }
-    button { cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:4px; }
-    button:hover { background:#45a049; }
+    button { cursor:pointer; border:none; border-radius:5px; font-weight:bold; }
+    /* Role modal buttons */
+    #role-modal button { width:45%; margin:5px; padding:12px; border-radius:8px; font-weight:bold; }
+    #role-instructor { background-color: #4CAF50; color:white; }
+    #role-student { background-color: #2196F3; color:white; }
+    #role-modal button:hover { opacity:0.85; }
   </style>
 </head>
 
@@ -90,7 +94,7 @@
 
   <script src="js/main.js"></script>
 
-  <!-- Visitor Counter -->
+  <!-- Visitor Counter Script -->
   <script>
 async function loadVisitors() {
   const counterEl = document.getElementById("visitor-counter");
@@ -113,7 +117,8 @@ loadVisitors();
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const supabaseUrl = "https://utpwbrbpdyrwqlheaknm.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U"; // <-- replace with your anon key
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U
+"; // <-- Replace with your Supabase anon key
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const calendarContainer = document.getElementById("calendar-container");
@@ -125,8 +130,8 @@ const studentModal = document.getElementById("student-modal");
 let selectedDate = null;
 let currentMonthOffset = 0;
 
-// Calendar rendering
-function renderCalendar(offset=0){
+// Render calendar with color-coded days
+async function renderCalendar(offset=0){
   calendarContainer.innerHTML="";
   const now = new Date();
   const month = now.getMonth() + offset;
@@ -135,6 +140,15 @@ function renderCalendar(offset=0){
   const lastDay = new Date(year, month+1, 0);
   calendarMonthLabel.innerText = firstDay.toLocaleString('default',{month:'long', year:'numeric'});
 
+  // Fetch classes for the month
+  const { data: monthClasses } = await supabase
+    .from("classes")
+    .select("start_time")
+    .gte("start_time", new Date(year, month, 1).toISOString())
+    .lt("start_time", new Date(year, month+1, 1).toISOString());
+
+  const classDays = monthClasses.map(c=>new Date(c.start_time).getDate());
+
   for(let d=1; d<=lastDay.getDate(); d++){
     const date = new Date(year, month, d);
     const dayDiv = document.createElement("div");
@@ -142,7 +156,11 @@ function renderCalendar(offset=0){
     dayDiv.innerText = d;
     dayDiv.dataset.date = date.toISOString().split("T")[0];
 
-    // Click handler fixed
+    if(classDays.includes(d)){
+      dayDiv.style.backgroundColor="#d4edda"; // light green
+      dayDiv.style.fontWeight="bold";
+    }
+
     dayDiv.onclick = () => {
       selectedDate = dayDiv.dataset.date;
       roleModal.style.display = "flex";
@@ -181,13 +199,18 @@ document.getElementById("add-class").onclick = async () => {
   const { error } = await supabase.from("classes").insert([{title,instructor:"Instructor",start_time,end_time,capacity}]);
   if(error) alert(error.message); else alert("Class added!");
   instructorModal.style.display="none";
+  renderCalendar(currentMonthOffset);
 };
 
 // Student modal
 function openStudentModal(){ studentModal.style.display="flex"; loadStudentClasses(selectedDate); }
 document.getElementById("close-student").onclick = () => studentModal.style.display="none";
+
 async function loadStudentClasses(date){
-  const { data: classes, error } = await supabase.from("classes").select("*").gte("start_time",date+"T00:00").lte("end_time",date+"T23:59");
+  const { data: classes, error } = await supabase.from("classes")
+    .select("*")
+    .gte("start_time", date+"T00:00")
+    .lte("end_time", date+"T23:59");
   const listEl = document.getElementById("student-classes-list");
   listEl.innerHTML="";
   if(error){ listEl.innerText=error.message; return; }

@@ -21,7 +21,7 @@
 
     <!-- ✅ Visitor Counter -->
     <div id="visitor-counter" style="text-align:center; margin-top:20px; font-size:18px;">
-      Loading visitors...
+      🌍 Loading visitors...
     </div>
   </main>
 
@@ -30,16 +30,35 @@
   <!-- ✅ Visitor Tracking Script -->
   <script>
     async function loadVisitors() {
+      const counterEl = document.getElementById("visitor-counter");
+
       try {
-        const res = await fetch("https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track");
+        // ⏱ timeout protection (5 sec)
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
+        const res = await fetch(
+          "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
+          { signal: controller.signal }
+        );
+
+        clearTimeout(timeout);
+
+        if (!res.ok) {
+          throw new Error("API error: " + res.status);
+        }
+
         const data = await res.json();
 
-        document.getElementById("visitor-counter").innerText =
-          "🌍 Unique Visitors: " + data.unique;
+        // ✅ safety fallback
+        const count = data?.unique ?? 0;
+
+        counterEl.innerText = "🌍 Unique Visitors: " + count;
+
       } catch (err) {
-        console.error(err);
-        document.getElementById("visitor-counter").innerText =
-          "Visitor counter unavailable";
+        console.error("Visitor counter error:", err);
+
+        counterEl.innerText = "🌍 Visitors: unavailable";
       }
     }
 

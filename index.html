@@ -7,6 +7,33 @@
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
   <style>
+    /* ── Montage (home page hero) ─────────────────────────── */
+    .montage-container {
+      position: relative;
+      width: 100%;
+      height: min(55vh, 480px);
+      overflow: hidden;
+      background: #000;
+    }
+    /* blurred background fill layer */
+    .montage-container .media-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: blur(18px) brightness(0.55) saturate(1.2);
+      transform: scale(1.08);
+      z-index: 0;
+    }
+    /* sharp centred foreground */
+    .montage-container .media-main {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      z-index: 1;
+    }
+
     /* ── Calendar ─────────────────────────────────────────── */
     #bookings { padding: 20px; margin-top: 50px; }
 
@@ -17,7 +44,6 @@
       max-width: 800px;
       margin: 10px auto;
     }
-
     #calendar-header button {
       padding: 8px 16px;
       background: #4CAF50;
@@ -58,16 +84,38 @@
       min-height: 50px;
       user-select: none;
       transition: background 0.15s;
+      position: relative;
     }
     .calendar-day:hover { background: #f0f0f0; }
-    .calendar-day.has-class { background-color: #d4edda; font-weight: bold; }
-    .calendar-day.empty { border: none; cursor: default; background: none !important; }
+
+    /* Green = at least one class starts OR is ongoing this day */
+    .calendar-day.has-class {
+      background-color: #d4edda;
+      font-weight: bold;
+      border-color: #4CAF50;
+    }
+    .calendar-day.has-class:hover { background-color: #b8dfc3; }
+
+    .calendar-day.empty {
+      border: none;
+      cursor: default;
+      background: none !important;
+    }
+
+    /* tiny dot indicator */
+    .calendar-day.has-class::after {
+      content: "●";
+      display: block;
+      font-size: 8px;
+      color: #4CAF50;
+      margin-top: 2px;
+    }
 
     /* ── Modals ───────────────────────────────────────────── */
     .modal {
       position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.55);
       display: flex; justify-content: center; align-items: center;
       z-index: 1000;
     }
@@ -75,29 +123,35 @@
 
     .modal-content {
       background: white;
-      padding: 24px 20px 20px;
-      border-radius: 10px;
-      width: 90%; max-width: 420px;
+      padding: 24px 22px 20px;
+      border-radius: 12px;
+      width: 92%; max-width: 440px;
       position: relative;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h3 {
+      margin: 0 0 6px;
+      font-size: 17px;
     }
 
     .close {
-      position: absolute; top: 10px; right: 14px;
-      cursor: pointer; font-size: 22px; font-weight: bold; color: #555;
-      line-height: 1;
+      position: absolute; top: 12px; right: 16px;
+      cursor: pointer; font-size: 22px; font-weight: bold; color: #888;
     }
     .close:hover { color: #000; }
 
     /* Role buttons */
-    #role-modal .role-buttons {
+    .role-buttons {
       display: flex;
       gap: 12px;
-      margin-top: 16px;
+      margin-top: 14px;
     }
-    #role-modal .role-buttons button {
+    .role-buttons button {
       flex: 1;
-      padding: 14px;
+      padding: 14px 8px;
       border-radius: 8px;
       font-weight: bold;
       font-size: 15px;
@@ -108,54 +162,106 @@
     #role-student    { background-color: #2196F3; color: white; }
     #role-instructor:hover, #role-student:hover { opacity: 0.85; }
 
-    /* Instructor / student form inputs */
+    /* Form field labels + inputs */
+    .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+      margin: 10px 0 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
     .modal-content input[type="text"],
     .modal-content input[type="password"],
     .modal-content input[type="number"],
-    .modal-content input[type="datetime-local"] {
+    .modal-content input[type="datetime-local"],
+    .modal-content select {
       display: block;
       width: 100%;
-      margin: 6px 0 10px;
       padding: 9px 10px;
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 14px;
       box-sizing: border-box;
+      background: #fafafa;
+    }
+    .modal-content input:focus,
+    .modal-content select:focus {
+      outline: none;
+      border-color: #4CAF50;
+      background: #fff;
     }
 
-    #verify-password, #add-class {
+    .modal-btn {
       width: 100%;
-      margin-top: 6px;
-      padding: 10px;
+      margin-top: 14px;
+      padding: 11px;
       background: #4CAF50;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 7px;
       font-size: 15px;
       font-weight: bold;
       cursor: pointer;
     }
-    #verify-password:hover, #add-class:hover { opacity: 0.85; }
-    #verify-password:disabled, #add-class:disabled { opacity: 0.6; cursor: not-allowed; }
+    .modal-btn:hover { opacity: 0.87; }
+    .modal-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
     /* Student class cards */
     .class-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: #fafffe;
     }
-    .class-card button {
-      margin-top: 8px;
-      padding: 8px 16px;
+    .class-card .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #222;
+      margin-bottom: 8px;
+    }
+    .class-card .card-row {
+      display: flex;
+      align-items: flex-start;
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 4px;
+      gap: 6px;
+    }
+    .class-card .card-row .icon { min-width: 18px; }
+    .class-card .book-btn {
+      margin-top: 10px;
+      padding: 9px 18px;
       background: #2196F3;
       color: white;
       border: none;
       border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
+      font-size: 14px;
     }
-    .class-card button:hover { opacity: 0.85; }
+    .class-card .book-btn:hover { opacity: 0.85; }
+
+    /* Legend */
+    .calendar-legend {
+      max-width: 800px;
+      margin: 8px auto 0;
+      font-size: 12px;
+      color: #555;
+      display: flex;
+      gap: 16px;
+      padding: 0 4px;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border-radius: 3px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
   </style>
 </head>
 
@@ -169,13 +275,14 @@
   </nav>
 
   <main class="home">
+    <!-- ── Montage (populated by main.js via media/media.json) ── -->
     <div id="montage-container" class="montage-container"></div>
 
     <!-- Visitor Counter -->
     <div id="visitor-counter" style="text-align:center; margin-top:20px; font-size:18px;">🌍 Loading visitors...</div>
     <pre id="visitor-debug" style="text-align:center; margin-top:10px; color:red;"></pre>
 
-    <!-- ── Bookings Section ──────────────────────────────── -->
+    <!-- ── Bookings Section ──────────────────────────────────── -->
     <section id="bookings">
       <h2 style="text-align:center;">Bookings</h2>
 
@@ -192,61 +299,84 @@
 
       <div id="calendar-container"></div>
 
-      <!-- Role Modal -->
+      <div class="calendar-legend">
+        <span><span class="legend-dot" style="background:#d4edda; border:1px solid #4CAF50;"></span>Class available — click to book</span>
+      </div>
+
+      <!-- ── Role Modal ────────────────────────────────────── -->
       <div id="role-modal" class="modal hidden">
         <div class="modal-content">
           <span class="close" id="close-role">&times;</span>
-          <h3 style="margin:0 0 4px;">Who are you?</h3>
-          <p id="role-modal-date" style="color:#555; margin:0 0 8px; font-size:14px;"></p>
+          <h3>Who are you?</h3>
+          <p id="role-modal-date" style="color:#666; font-size:13px; margin:2px 0 0;"></p>
           <div class="role-buttons">
-            <button id="role-instructor">&#129528; Instructor</button>
-            <button id="role-student">&#127891; Student</button>
+            <button id="role-instructor">🧘 Instructor</button>
+            <button id="role-student">🎓 Student</button>
           </div>
         </div>
       </div>
 
-      <!-- Instructor Modal -->
+      <!-- ── Instructor Modal ───────────────────────────────── -->
       <div id="instructor-modal" class="modal hidden">
         <div class="modal-content">
           <span class="close" id="close-instructor">&times;</span>
-          <h3 style="margin:0 0 12px;">Add a Class</h3>
+          <h3>Add a Class</h3>
 
+          <!-- Step 1: password -->
           <div id="password-section">
-            <label style="font-size:13px;color:#555;">Instructor password</label>
+            <label class="field-label">Instructor Password</label>
             <input type="password" id="instructor-password" placeholder="Enter password">
-            <button id="verify-password">Verify &#10003;</button>
+            <button class="modal-btn" id="verify-password">Verify ✓</button>
           </div>
 
+          <!-- Step 2: class form (shown after password OK) -->
           <div id="class-form-section" style="display:none;">
-            <label style="font-size:13px;color:#555;">Class title</label>
-            <input type="text" id="class-title" placeholder="e.g. Morning Yoga">
 
-            <label style="font-size:13px;color:#555;">Start time</label>
+            <label class="field-label">Instructor Name</label>
+            <input type="text" id="instructor-name" placeholder="e.g. Andrea Lim">
+
+            <label class="field-label">Class Type</label>
+            <select id="class-type">
+              <option value="">— Select class type —</option>
+              <option>Yoga</option>
+              <option>Pilates</option>
+              <option>Meditation</option>
+              <option>Zumba</option>
+              <option>HIIT</option>
+              <option>Stretching</option>
+              <option>Other</option>
+            </select>
+
+            <label class="field-label">Class Title / Description</label>
+            <input type="text" id="class-title" placeholder="e.g. Morning Flow Yoga">
+
+            <label class="field-label">Class From (start date &amp; time)</label>
             <input type="datetime-local" id="start-time">
 
-            <label style="font-size:13px;color:#555;">End time</label>
+            <label class="field-label">Class End (end date &amp; time)</label>
             <input type="datetime-local" id="end-time">
 
-            <label style="font-size:13px;color:#555;">Capacity</label>
-            <input type="number" id="capacity" value="10" min="1">
+            <label class="field-label">Capacity (max students)</label>
+            <input type="number" id="capacity" value="10" min="1" max="200">
 
-            <button id="add-class">&#10003; Add Class</button>
+            <button class="modal-btn" id="add-class">✓ Add Class</button>
           </div>
         </div>
       </div>
 
-      <!-- Student Modal -->
+      <!-- ── Student Modal ──────────────────────────────────── -->
       <div id="student-modal" class="modal hidden">
         <div class="modal-content">
           <span class="close" id="close-student">&times;</span>
-          <h3 style="margin:0 0 4px;">Available Classes</h3>
-          <p id="student-modal-date" style="color:#555; margin:0 0 12px; font-size:14px;"></p>
-          <div id="student-classes-list">Loading&#8230;</div>
+          <h3>Available Classes</h3>
+          <p id="student-modal-date" style="color:#666; font-size:13px; margin:2px 0 12px;"></p>
+          <div id="student-classes-list">Loading…</div>
         </div>
       </div>
     </section>
   </main>
 
+  <!-- main.js handles montage + services page logic -->
   <script src="js/main.js"></script>
 
   <!-- Visitor Counter -->
@@ -273,34 +403,34 @@
     })();
   </script>
 
-  <!-- ══════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════════════
        BOOKINGS + CALENDAR  —  single <script type="module">
-  ══════════════════════════════════════════════════════ -->
+       All calendar, modal, Supabase logic lives here only.
+  ══════════════════════════════════════════════════════════ -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    /* ── Supabase client ────────────────────────────────── */
+    /* ── Supabase ───────────────────────────────────────────── */
     const supabase = createClient(
       "https://utpwbrbpdyrwqlheaknm.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzczNDEsImV4cCI6MjA5MDkxMzM0MX0.NThOb2kXgbz85s0kunWhSjblM8I_PjvE3byyhEzQB8U"
     );
 
-    /* ── App state ──────────────────────────────────────── */
-    let monthOffset  = 0;   // 0 = current month; ±N = months from now
+    /* ── State ──────────────────────────────────────────────── */
+    let monthOffset  = 0;   // 0 = current month
     let selectedDate = "";  // "YYYY-MM-DD"
 
-    /* ── Modal helpers ──────────────────────────────────── */
+    /* ── Helpers ────────────────────────────────────────────── */
     const $ = id => document.getElementById(id);
 
     function showModal(id) { $(id).classList.remove("hidden"); }
     function hideModal(id) { $(id).classList.add("hidden"); }
 
-    // Click-outside-to-close for all modals
+    // Click backdrop to close
     ["role-modal", "instructor-modal", "student-modal"].forEach(id => {
       $(id).addEventListener("click", e => { if (e.target === $(id)) hideModal(id); });
     });
 
-    /* ── Pretty date string ─────────────────────────────── */
     function prettyDate(ymd) {
       const [y, m, d] = ymd.split("-").map(Number);
       return new Date(y, m - 1, d).toLocaleDateString("default", {
@@ -308,43 +438,72 @@
       });
     }
 
-    /* ══════════════════════════════════════════════════════
+    function fmtTime(isoStr) {
+      return new Date(isoStr).toLocaleTimeString("default", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function fmtDateTime(isoStr) {
+      return new Date(isoStr).toLocaleString("default", {
+        weekday: "short", day: "numeric", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    /* ════════════════════════════════════════════════════════
        CALENDAR
-    ══════════════════════════════════════════════════════ */
+       Key fix: highlight every day that falls within ANY
+       class's start_time..end_time range, not just the
+       start day.
+    ════════════════════════════════════════════════════════ */
     async function renderCalendar() {
       const container  = $("calendar-container");
       const monthLabel = $("calendar-month");
 
-      // Compute target year/month from today + offset
       const base  = new Date();
       const first = new Date(base.getFullYear(), base.getMonth() + monthOffset, 1);
       const last  = new Date(base.getFullYear(), base.getMonth() + monthOffset + 1, 0);
 
       const daysInMonth = last.getDate();
-      const startCol    = first.getDay();   // 0 = Sun … 6 = Sat
+      const startCol    = first.getDay();
 
-      monthLabel.innerText = first.toLocaleString("default", {
-        month: "long", year: "numeric"
-      });
+      monthLabel.innerText = first.toLocaleString("default", { month: "long", year: "numeric" });
 
-      /* fetch days-with-classes for this month */
-      const classDays = new Set();
+      // ── Fetch all classes that OVERLAP this calendar month ──
+      // A class overlaps the month if:  start_time <= monthEnd  AND  end_time >= monthStart
+      const monthStart = new Date(first.getFullYear(), first.getMonth(), 1, 0, 0, 0).toISOString();
+      const monthEnd   = new Date(last.getFullYear(),  last.getMonth(),  last.getDate(), 23, 59, 59).toISOString();
+
+      const classDays = new Set();   // day-of-month numbers that have a class
       try {
         const { data, error } = await supabase
           .from("classes")
-          .select("start_time")
-          .gte("start_time", first.toISOString())
-          .lte("start_time", new Date(last.getFullYear(), last.getMonth(), last.getDate(), 23, 59, 59).toISOString());
+          .select("start_time, end_time")
+          .lte("start_time", monthEnd)     // class starts before or during this month
+          .gte("end_time",   monthStart);  // class ends after or during this month
 
         if (!error && data) {
-          data.forEach(c => classDays.add(new Date(c.start_time).getDate()));
-        }
-      } catch (_) { /* calendar still renders without class highlights */ }
+          data.forEach(c => {
+            // Mark every calendar day that falls within [start_time, end_time]
+            const classStart = new Date(c.start_time);
+            const classEnd   = new Date(c.end_time);
 
-      /* build grid cells */
+            for (let d = 1; d <= daysInMonth; d++) {
+              const dayStart = new Date(first.getFullYear(), first.getMonth(), d, 0, 0, 0);
+              const dayEnd   = new Date(first.getFullYear(), first.getMonth(), d, 23, 59, 59);
+
+              // Day overlaps with class if dayStart <= classEnd AND dayEnd >= classStart
+              if (dayStart <= classEnd && dayEnd >= classStart) {
+                classDays.add(d);
+              }
+            }
+          });
+        }
+      } catch (_) { /* render without highlights if fetch fails */ }
+
+      /* ── Build grid ── */
       container.innerHTML = "";
 
-      // Leading blank cells
+      // Blank leading cells
       for (let i = 0; i < startCol; i++) {
         const blank = document.createElement("div");
         blank.className = "calendar-day empty";
@@ -354,7 +513,8 @@
       // Day cells
       for (let d = 1; d <= daysInMonth; d++) {
         const cell = document.createElement("div");
-        cell.className = "calendar-day" + (classDays.has(d) ? " has-class" : "");
+        const hasClass = classDays.has(d);
+        cell.className = "calendar-day" + (hasClass ? " has-class" : "");
         cell.textContent = d;
 
         const yy = String(first.getFullYear());
@@ -375,23 +535,27 @@
     $("prev-month").addEventListener("click", () => { monthOffset--; renderCalendar(); });
     $("next-month").addEventListener("click", () => { monthOffset++; renderCalendar(); });
 
-    /* ══════════════════════════════════════════════════════
+    /* ════════════════════════════════════════════════════════
        ROLE MODAL
-    ══════════════════════════════════════════════════════ */
-    $("close-role").addEventListener("click",       () => hideModal("role-modal"));
-    $("role-instructor").addEventListener("click",  () => { hideModal("role-modal"); openInstructorModal(); });
-    $("role-student").addEventListener("click",     () => { hideModal("role-modal"); openStudentModal(); });
+    ════════════════════════════════════════════════════════ */
+    $("close-role").addEventListener("click",      () => hideModal("role-modal"));
+    $("role-instructor").addEventListener("click", () => { hideModal("role-modal"); openInstructorModal(); });
+    $("role-student").addEventListener("click",    () => { hideModal("role-modal"); openStudentModal(); });
 
-    /* ══════════════════════════════════════════════════════
+    /* ════════════════════════════════════════════════════════
        INSTRUCTOR MODAL
-    ══════════════════════════════════════════════════════ */
+    ════════════════════════════════════════════════════════ */
     function openInstructorModal() {
-      $("instructor-password").value              = "";
-      $("class-title").value                      = "";
-      $("password-section").style.display         = "block";
-      $("class-form-section").style.display       = "none";
+      // Reset all fields
+      $("instructor-password").value  = "";
+      $("instructor-name").value      = "";
+      $("class-type").value           = "";
+      $("class-title").value          = "";
+      $("capacity").value             = "10";
+      $("password-section").style.display    = "block";
+      $("class-form-section").style.display  = "none";
 
-      // Pre-fill start/end with selected date at 09:00–10:00
+      // Pre-fill dates from the clicked calendar day
       if (selectedDate) {
         $("start-time").value = selectedDate + "T09:00";
         $("end-time").value   = selectedDate + "T10:00";
@@ -401,7 +565,6 @@
 
     $("close-instructor").addEventListener("click", () => hideModal("instructor-modal"));
 
-    // Password verify (button + Enter key)
     function verifyPassword() {
       if ($("instructor-password").value === "wellness") {
         $("password-section").style.display   = "none";
@@ -416,22 +579,32 @@
     $("instructor-password").addEventListener("keydown", e => { if (e.key === "Enter") verifyPassword(); });
 
     $("add-class").addEventListener("click", async () => {
-      const title      = $("class-title").value.trim();
-      const start_time = $("start-time").value;
-      const end_time   = $("end-time").value;
-      const capacity   = parseInt($("capacity").value, 10) || 10;
+      const instructorName = $("instructor-name").value.trim();
+      const classType      = $("class-type").value;
+      const title          = $("class-title").value.trim();
+      const start_time     = $("start-time").value;
+      const end_time       = $("end-time").value;
+      const capacity       = parseInt($("capacity").value, 10) || 10;
 
-      if (!title)                    { alert("Please enter a class title.");          return; }
-      if (!start_time)               { alert("Please set a start time.");             return; }
-      if (!end_time)                 { alert("Please set an end time.");              return; }
-      if (end_time <= start_time)    { alert("End time must be after start time.");   return; }
+      if (!instructorName)         { alert("Please enter the instructor name.");    return; }
+      if (!classType)              { alert("Please select a class type.");          return; }
+      if (!title)                  { alert("Please enter a class title.");          return; }
+      if (!start_time)             { alert("Please set a start date & time.");      return; }
+      if (!end_time)               { alert("Please set an end date & time.");       return; }
+      if (end_time <= start_time)  { alert("End must be after start.");             return; }
 
       const btn = $("add-class");
       btn.disabled    = true;
       btn.textContent = "Saving…";
 
+      // Store class_type in the title column as "Type: Title" OR use a separate column.
+      // Here we pass instructor name via the `instructor` column and class_type in title.
       const { error } = await supabase.from("classes").insert([{
-        title, instructor: "Instructor", start_time, end_time, capacity
+        title:      `[${classType}] ${title}`,
+        instructor: instructorName,
+        start_time,
+        end_time,
+        capacity
       }]);
 
       btn.disabled    = false;
@@ -440,18 +613,20 @@
       if (error) {
         alert("Error saving class: " + error.message);
       } else {
-        alert(`"${title}" has been added! ✅`);
+        alert(`"${title}" added successfully! ✅`);
         hideModal("instructor-modal");
         renderCalendar();
       }
     });
 
-    /* ══════════════════════════════════════════════════════
+    /* ════════════════════════════════════════════════════════
        STUDENT MODAL
-    ══════════════════════════════════════════════════════ */
+       Fix: query classes where selectedDate falls within
+       start_time..end_time (not just same-day start_time)
+    ════════════════════════════════════════════════════════ */
     function openStudentModal() {
-      $("student-modal-date").innerText    = prettyDate(selectedDate);
-      $("student-classes-list").innerHTML  = "Loading&#8230;";
+      $("student-modal-date").innerText   = prettyDate(selectedDate);
+      $("student-classes-list").innerHTML = "Loading…";
       showModal("student-modal");
       loadStudentClasses(selectedDate);
     }
@@ -461,58 +636,67 @@
     async function loadStudentClasses(date) {
       const listEl = $("student-classes-list");
 
+      // A class is "available" on `date` if start_time <= end-of-date AND end_time >= start-of-date
+      const dayStart = date + "T00:00:00";
+      const dayEnd   = date + "T23:59:59";
+
       const { data: classes, error } = await supabase
         .from("classes")
         .select("*")
-        .gte("start_time", date + "T00:00:00")
-        .lte("start_time", date + "T23:59:59")
+        .lte("start_time", dayEnd)    // class has already started by end of selected day
+        .gte("end_time",   dayStart)  // class hasn't ended yet at start of selected day
         .order("start_time", { ascending: true });
 
       if (error) {
-        listEl.innerHTML = `<p style="color:red;">Error loading classes: ${error.message}</p>`;
+        listEl.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
         return;
       }
       if (!classes || classes.length === 0) {
-        listEl.innerHTML = `<p style="color:#888; text-align:center;">No classes scheduled for this day.</p>`;
+        listEl.innerHTML = `<p style="color:#888; text-align:center; padding:12px 0;">No classes scheduled for this day.</p>`;
         return;
       }
 
       listEl.innerHTML = "";
 
       for (const c of classes) {
-        const start = new Date(c.start_time).toLocaleTimeString("default", { hour: "2-digit", minute: "2-digit" });
-        const end   = new Date(c.end_time).toLocaleTimeString("default",   { hour: "2-digit", minute: "2-digit" });
+        // Parse "[ClassType] Title" format stored by instructor
+        let classType = "";
+        let classTitle = c.title;
+        const match = c.title.match(/^\[(.+?)\]\s*(.+)$/);
+        if (match) { classType = match[1]; classTitle = match[2]; }
 
         const card = document.createElement("div");
         card.className = "class-card";
         card.innerHTML = `
-          <strong style="font-size:15px;">${c.title}</strong>
-          <div style="font-size:13px; color:#555; margin:4px 0;">
-            🕐 ${start} – ${end} &nbsp;|&nbsp; 👤 ${c.instructor}
-          </div>
-          <div style="font-size:13px; color:#777;">Capacity: ${c.capacity}</div>
-          <button>Book this class</button>
+          <div class="card-title">${classTitle}</div>
+          ${classType ? `<div class="card-row"><span class="icon">🏷️</span><span><strong>Class Type:</strong> ${classType}</span></div>` : ""}
+          <div class="card-row"><span class="icon">👤</span><span><strong>Instructor:</strong> ${c.instructor}</span></div>
+          <div class="card-row"><span class="icon">📅</span><span><strong>From:</strong> ${fmtDateTime(c.start_time)}</span></div>
+          <div class="card-row"><span class="icon">📅</span><span><strong>Until:</strong> ${fmtDateTime(c.end_time)}</span></div>
+          <div class="card-row"><span class="icon">👥</span><span><strong>Capacity:</strong> ${c.capacity} students</span></div>
+          <button class="book-btn">Book this class</button>
         `;
 
-        card.querySelector("button").addEventListener("click", async () => {
-          const name = prompt(`Book "${c.title}" — enter your name:`);
+        card.querySelector(".book-btn").addEventListener("click", async () => {
+          const name = prompt(`Book "${classTitle}" with ${c.instructor}\nEnter your name:`);
           if (!name || !name.trim()) return;
 
           const { error: bookErr } = await supabase
             .from("bookings")
             .insert([{ class_id: c.id, student_name: name.trim() }]);
 
-          alert(bookErr
-            ? "Booking failed: " + bookErr.message
-            : `You're booked into "${c.title}"! 🎉`
-          );
+          if (bookErr) {
+            alert("Booking failed: " + bookErr.message);
+          } else {
+            alert(`You're booked into "${classTitle}" with ${c.instructor}! 🎉`);
+          }
         });
 
         listEl.appendChild(card);
       }
     }
 
-    /* ── Initial calendar render ────────────────────────── */
+    /* ── Initial render ─────────────────────────────────────── */
     renderCalendar();
   </script>
 </body>

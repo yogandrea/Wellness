@@ -6,6 +6,7 @@
   <title>Home - Wellness Events</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
   <nav class="nav">
     <a href="index.html">Home</a>
@@ -16,8 +17,33 @@
 
   <main class="home">
     <div id="montage-container" class="montage-container"></div>
+
+    <!-- ✅ Visitor Counter -->
+    <div id="visitor-counter" style="text-align:center; margin-top:20px; font-size:18px;">
+      Loading visitors...
+    </div>
   </main>
 
   <script src="js/main.js"></script>
+
+  <!-- ✅ Visitor Tracking Script -->
+  <script>
+    async function loadVisitors() {
+      try {
+        const res = await fetch("https://YOUR_PROJECT.supabase.co/functions/v1/track");
+        const data = await res.json();
+
+        document.getElementById("visitor-counter").innerText =
+          "🌍 Unique Visitors: " + data.unique;
+      } catch (err) {
+        console.error(err);
+        document.getElementById("visitor-counter").innerText =
+          "Visitor counter unavailable";
+      }
+    }
+
+    loadVisitors();
+  </script>
+
 </body>
 </html>

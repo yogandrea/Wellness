@@ -28,42 +28,32 @@
   <script src="js/main.js"></script>
 
   <!-- ✅ Visitor Tracking Script -->
-  <script>
-    async function loadVisitors() {
-      const counterEl = document.getElementById("visitor-counter");
+ <script>
+async function loadVisitors() {
+  const counterEl = document.getElementById("visitor-counter");
 
-      try {
-        // ⏱ timeout protection (5 sec)
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-
-        const res = await fetch(
-          "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
-          { signal: controller.signal }
-        );
-
-        clearTimeout(timeout);
-
-        if (!res.ok) {
-          throw new Error("API error: " + res.status);
+  try {
+    const res = await fetch(
+      "https://utpwbrbpdyrwqlheaknm.supabase.co/functions/v1/track",
+      {
+        headers: {
+          "apikey": "YOUR_SUPABASE_ANON_KEY"
         }
-
-        const data = await res.json();
-
-        // ✅ safety fallback
-        const count = data?.unique ?? 0;
-
-        counterEl.innerText = "🌍 Unique Visitors: " + count;
-
-      } catch (err) {
-        console.error("Visitor counter error:", err);
-
-        counterEl.innerText = "🌍 Visitors: unavailable";
       }
-    }
+    );
 
-    loadVisitors();
-  </script>
+    const data = await res.json();
+
+    counterEl.innerText = "🌍 Unique Visitors: " + (data.unique ?? 0);
+
+  } catch (err) {
+    console.error(err);
+    counterEl.innerText = "🌍 Visitors unavailable";
+  }
+}
+
+loadVisitors();
+</script>
 
 </body>
 </html>

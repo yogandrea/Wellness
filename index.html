@@ -115,11 +115,11 @@ loadVisitors();
   </script>
 
   <!-- Bookings Script -->
-  <script type="module">
+ <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const supabaseUrl = "https://utpwbrbpdyrwqlheaknm.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0cHdicmJwZHlyd3FsaGVha25tIiwicm9sI..."; // Your anon key
+const supabaseAnonKey = "YOUR_ANON_KEY_HERE";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const calendarContainer = document.getElementById("calendar-container");
@@ -130,44 +130,113 @@ const studentModal = document.getElementById("student-modal");
 
 let selectedDate = null;
 let currentMonthOffset = 0;
-let instructorSelectedDates = []; // for multi-date selection
+let instructorSelectedDates = [];
 
-// Render calendar with classes & selected range
-async function renderCalendar(offset=0){
-  calendarContainer.innerHTML="";
-  const now = new Date();
-  const month = now.getMonth()+offset;
-  const year = now.getFullYear();
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month+1, 0);
-  calendarMonthLabel.innerText = firstDay.toLocaleString('default',{month:'long', year:'numeric'});
+// Render calendar
+async function renderCalendar(offset = 0) {
+    calendarContainer.innerHTML = "";
+    const now = new Date();
+    const month = now.getMonth() + offset;
+    const year = now.getFullYear();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    calendarMonthLabel.innerText = firstDay.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-  // Fetch classes for month
-  const { data: monthClasses } = await supabase
-    .from("classes")
-    .select("start_time")
-    .gte("start_time", new Date(year, month, 1).toISOString())
-    .lt("start_time", new Date(year, month+1, 1).toISOString());
+    const { data: monthClasses } = await supabase
+        .from("classes")
+        .select("start_time")
+        .gte("start_time", new Date(year, month, 1).toISOString())
+        .lt("start_time", new Date(year, month + 1, 1).toISOString());
 
-  const classDays = monthClasses.map(c=>new Date(c.start_time).getDate());
+    const classDays = monthClasses.map(c => new Date(c.start_time).getDate());
 
-  for(let d=1; d<=lastDay.getDate(); d++){
-    const date = new Date(year, month, d);
-    const dayDiv = document.createElement("div");
-    dayDiv.classList.add("calendar-day");
-    dayDiv.innerText=d;
-    dayDiv.dataset.date=date.toISOString().split("T")[0];
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+        const date = new Date(year, month, d);
+        const dayDiv = document.createElement("div");
+        dayDiv.classList.add("calendar-day");
+        dayDiv.innerText = d;
+        dayDiv.dataset.date = date.toISOString().split("T")[0];
 
-    if(classDays.includes(d)) dayDiv.classList.add("has-class");
-    if(instructorSelectedDates.includes(dayDiv.dataset.date)) dayDiv.classList.add("selected-range");
+        if (classDays.includes(d)) dayDiv.classList.add("has-class");
+        if (instructorSelectedDates.includes(dayDiv.dataset.date)) dayDiv.classList.add("selected-range");
 
-    dayDiv.onclick = () => {
-      selectedDate=dayDiv.dataset.date;
-      roleModal.style.display="flex";
-    };
+        dayDiv.onclick = () => {
+            selectedDate = dayDiv.dataset.date;
+            roleModal.style.display = "flex";
+        };
 
-    calendarContainer.appendChild(dayDiv);
-  }
+        calendarContainer.appendChild(dayDiv);
+    }
 }
+
 renderCalendar(currentMonthOffset);
-document.getElementById("prev-month").onclick=()=>{ currentMonthOffset--; render
+document.getElementById("prev-month").onclick = () => { currentMonthOffset--; renderCalendar(currentMonthOffset); };
+document.getElementById("next-month").onclick = () => { currentMonthOffset++; renderCalendar(currentMonthOffset); };
+
+// Role modal buttons
+document.getElementById("close-role").onclick = () => roleModal.style.display = "none";
+document.getElementById("role-instructor").onclick = () => { roleModal.style.display = "none"; openInstructorModal(); };
+document.getElementById("role-student").onclick = () => { roleModal.style.display = "none"; openStudentModal(); };
+
+// Instructor modal
+function openInstructorModal() {
+    instructorModal.style.display = "flex";
+    document.getElementById("password-section").style.display = "block";
+    document.getElementById("class-form-section").style.display = "none";
+}
+document.getElementById("close-instructor").onclick = () => instructorModal.style.display = "none";
+
+document.getElementById("verify-password").onclick = () => {
+    if (document.getElementById("instructor-password").value === "wellness") {
+        document.getElementById("password-section").style.display = "none";
+        document.getElementById("class-form-section").style.display = "block";
+    } else {
+        alert("Incorrect password");
+    }
+};
+
+document.getElementById("add-class").onclick = async () => {
+    const title = document.getElementById("class-title").value;
+    const start_time = document.getElementById("start-time").value;
+    const end_time = document.getElementById("end-time").value;
+    const capacity = parseInt(document.getElementById("capacity").value);
+
+    const { error } = await supabase.from("classes").insert([{ title, instructor: "Instructor", start_time, end_time, capacity }]);
+    if (error) alert(error.message);
+    else {
+        alert("Class added!");
+        instructorSelectedDates.push(selectedDate);
+        renderCalendar(currentMonthOffset);
+    }
+    instructorModal.style.display = "none";
+};
+
+// Student modal
+function openStudentModal() { studentModal.style.display = "flex"; loadStudentClasses(selectedDate); }
+document.getElementById("close-student").onclick = () => studentModal.style.display = "none";
+
+async function loadStudentClasses(date) {
+    const { data: classes, error } = await supabase.from("classes")
+        .select("*")
+        .gte("start_time", date + "T00:00")
+        .lte("end_time", date + "T23:59");
+
+    const listEl = document.getElementById("student-classes-list");
+    listEl.innerHTML = "";
+    if (error) { listEl.innerText = error.message; return; }
+    if (classes.length === 0) { listEl.innerText = "No classes for this day"; return; }
+
+    for (const c of classes) {
+        const div = document.createElement("div");
+        div.innerHTML = `<strong>${c.title}</strong> by ${c.instructor}<br>${new Date(c.start_time).toLocaleString()} - ${new Date(c.end_time).toLocaleString()} <button>Book</button>`;
+        div.querySelector("button").onclick = async () => {
+            const studentName = prompt("Enter your name to book this class:");
+            if (!studentName) return;
+            const { error } = await supabase.from("bookings").insert([{ class_id: c.id, student_name: studentName }]);
+            alert(error ? error.message : "Booked!");
+            loadStudentClasses(date);
+        };
+        listEl.appendChild(div);
+    }
+}
+</script>

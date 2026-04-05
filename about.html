@@ -8,19 +8,17 @@
   <link rel="stylesheet" href="css/style.css">
   <style>
 
-    /* ── Page ──────────────────────────────────────────────── */
+    /* ── Page ──────────────────────────────────────────── */
     .about-page {
       max-width: 1100px;
       margin: 0 auto;
       padding: 40px 20px 60px;
     }
-
     .about-page h1 {
       text-align: center;
       font-size: 28px;
       margin-bottom: 6px;
     }
-
     .about-intro {
       text-align: center;
       color: #666;
@@ -28,122 +26,115 @@
       margin-bottom: 40px;
     }
 
-    /* ── Profiles grid ─────────────────────────────────────── */
+    /* ── Profiles grid ─────────────────────────────────── */
     .profiles-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 28px;
     }
 
-    /* ── Individual profile card ───────────────────────────── */
+    /* ── Profile card ──────────────────────────────────── */
     .profile-card {
       background: #fff;
       border-radius: 16px;
       box-shadow: 0 4px 18px rgba(0,0,0,0.09);
       overflow: hidden;
-      text-align: center;
       transition: transform 0.25s, box-shadow 0.25s;
-      cursor: default;
     }
     .profile-card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-4px);
       box-shadow: 0 10px 28px rgba(0,0,0,0.14);
     }
 
-    /* Photo area */
-    .profile-photo-wrap {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      overflow: hidden;
-      background: #f0f0f0;
+    /* Coloured header band with initials avatar */
+    .profile-header {
+      background: linear-gradient(135deg, #4CAF50, #2e7d32);
+      padding: 28px 20px 20px;
+      text-align: center;
     }
-    .profile-photo-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: top center;
-      display: block;
-      transition: transform 0.35s;
-    }
-    .profile-card:hover .profile-photo-wrap img {
-      transform: scale(1.04);
-    }
-
-    /* Name derived from filename: "andrea_lim.jpg" → "Andrea Lim" */
-    .profile-name {
-      font-size: 16px;
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      border: 3px solid rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
       font-weight: 700;
-      color: #222;
-      padding: 14px 12px 4px;
+      color: #fff;
+      margin: 0 auto 12px;
+      letter-spacing: 1px;
     }
-
+    .profile-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
     .profile-role {
-      font-size: 13px;
-      color: #4CAF50;
-      font-weight: 600;
-      padding: 0 12px 14px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.82);
+      margin-top: 4px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
     }
 
-    /* ── Loading / empty states ────────────────────────────── */
+    /* Card body */
+    .profile-body {
+      padding: 18px 20px 20px;
+    }
+
+    /* Bio paragraph */
+    .profile-bio {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.65;
+      margin-bottom: 14px;
+    }
+
+    /* Key-value pills for extra fields */
+    .profile-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .profile-field {
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+      align-items: flex-start;
+    }
+    .field-key {
+      font-weight: 700;
+      color: #4CAF50;
+      min-width: 90px;
+      flex-shrink: 0;
+    }
+    .field-val {
+      color: #333;
+    }
+
+    /* Raw text fallback */
+    .profile-raw {
+      font-size: 13px;
+      color: #444;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    /* ── Loading / error ────────────────────────────────── */
     .profiles-loading {
-      grid-column: 1/-1;
+      grid-column: 1 / -1;
       text-align: center;
       color: #888;
       padding: 40px 0;
       font-size: 15px;
     }
 
-    /* ── Lightbox ──────────────────────────────────────────── */
-    #profile-lightbox {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.82);
-      z-index: 3000;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      gap: 16px;
-      padding: 20px;
-    }
-    #profile-lightbox.open { display: flex; }
-
-    #profile-lightbox img {
-      max-width: min(420px, 90vw);
-      max-height: 70vh;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 5px solid #fff;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-    }
-
-    #lb-name {
-      color: #fff;
-      font-size: 22px;
-      font-weight: 700;
-    }
-    #lb-role {
-      color: #a5d6a7;
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    #lb-close {
-      position: absolute;
-      top: 16px; right: 20px;
-      color: #fff;
-      font-size: 34px;
-      cursor: pointer;
-      font-weight: bold;
-      line-height: 1;
-    }
-    #lb-close:hover { color: #f44; }
-
     @media (max-width: 600px) {
-      .profiles-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
-      .profile-name  { font-size: 14px; }
+      .profiles-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -161,90 +152,177 @@
   <div class="about-page">
     <h1>Meet Our Instructors</h1>
     <p class="about-intro">
-      Our team of certified wellness professionals are here to guide your journey.
+      Our certified wellness professionals are here to guide your journey.
     </p>
-
     <div id="profiles-grid" class="profiles-grid">
       <p class="profiles-loading">Loading instructor profiles…</p>
     </div>
   </div>
 </main>
 
-<!-- Profile lightbox (click card for larger view) -->
-<div id="profile-lightbox">
-  <span id="lb-close">&times;</span>
-  <img id="lb-img" src="" alt="">
-  <div id="lb-name"></div>
-  <div id="lb-role">Instructor</div>
-</div>
-
 <script>
 // ============================================================
-// CONFIG — must match your GitHub repo
+// CONFIG
 // ============================================================
-const GH_USER       = "yogandrea";
-const GH_REPO       = "Wellness";
-const PROFILES_PATH = "Profiles";           // folder in your repo root
-
-const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp"];
+const GH_USER        = "yogandrea";
+const GH_REPO        = "Wellness";
+const PROFILES_PATH  = "media/Profiles";   // folder containing .txt files
 
 // ============================================================
-// Filename → display name
-// "andrea_lim.jpg"  → "Andrea Lim"
-// "dr-john-tan.jpg" → "Dr John Tan"
-// "MaryAnn.jpg"     → "Maryann"  (basic title-case)
+// Parse a .txt profile into a structured object.
+//
+// Supports "Key: Value" lines, e.g.:
+//   Name: Andrea Lim
+//   Role: Yoga Instructor
+//   Speciality: Hatha Yoga, Meditation
+//   Bio: Andrea has been teaching yoga for 10 years...
+//   Email: andrea@example.com
+//   Phone: +65 9123 4567
+//
+// Lines that don't follow "Key: Value" are collected as
+// free-form text (shown in the bio section if no Bio: key).
+//
+// Recognised special keys (case-insensitive):
+//   Name, Role / Title / Position, Bio / About / Description,
+//   Speciality / Specialty / Specialties / Skills,
+//   Email, Phone / Contact, Experience / Years
 // ============================================================
-function toDisplayName(filename) {
-  return filename
-    .replace(/\.[^.]+$/, "")          // strip extension
-    .replace(/[-_]/g, " ")            // underscores/hyphens → spaces
-    .replace(/\b\w/g, c => c.toUpperCase()); // title-case each word
+function parseProfile(text, filename) {
+  const lines  = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const fields = {};   // raw key → value map
+  const loose  = [];   // lines that aren't key:value
+
+  lines.forEach(line => {
+    const m = line.match(/^([^:]{1,40}):\s*(.+)$/);
+    if (m) {
+      fields[m[1].trim().toLowerCase()] = m[2].trim();
+    } else {
+      loose.push(line);
+    }
+  });
+
+  // Helper: find value by multiple possible key names
+  const get = (...keys) => {
+    for (const k of keys) {
+      const found = Object.keys(fields).find(f => f === k.toLowerCase());
+      if (found !== undefined) return fields[found];
+    }
+    return "";
+  };
+
+  // Derive display name: Name field → filename fallback
+  const rawName = get("name") ||
+    filename.replace(/\.txt$/i, "").replace(/[-_]/g, " ")
+             .replace(/\b\w/g, c => c.toUpperCase());
+
+  const role         = get("role", "title", "position");
+  const bio          = get("bio", "about", "description") || loose.join(" ");
+  const speciality   = get("speciality", "specialty", "specialties", "skills", "specialisation");
+  const experience   = get("experience", "years", "years of experience");
+  const email        = get("email");
+  const phone        = get("phone", "contact", "mobile");
+
+  // Extra fields: everything not already consumed above
+  const consumed = new Set(["name","role","title","position","bio","about","description",
+    "speciality","specialty","specialties","skills","specialisation",
+    "experience","years","years of experience","email","phone","contact","mobile"]);
+  const extras = Object.entries(fields)
+    .filter(([k]) => !consumed.has(k))
+    .map(([k, v]) => ({ key: k.charAt(0).toUpperCase() + k.slice(1), val: v }));
+
+  // Initials for avatar
+  const initials = rawName.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
+
+  return { name: rawName, role, bio, speciality, experience, email, phone, extras, initials };
 }
 
 // ============================================================
-// Load profiles from GitHub API
+// Build a profile card DOM element
+// ============================================================
+function buildCard(profile) {
+  const card = document.createElement("div");
+  card.className = "profile-card";
+
+  // ── Header ──
+  card.innerHTML = `
+    <div class="profile-header">
+      <div class="profile-avatar">${profile.initials || "?"}</div>
+      <div class="profile-name">${profile.name}</div>
+      ${profile.role ? `<div class="profile-role">${profile.role}</div>` : ""}
+    </div>
+    <div class="profile-body">
+      ${profile.bio ? `<p class="profile-bio">${profile.bio}</p>` : ""}
+      <div class="profile-fields" id="fields-${profile.initials}"></div>
+    </div>
+  `;
+
+  // ── Key-value rows ──
+  const fieldsEl = card.querySelector(".profile-fields");
+
+  const addField = (key, val, icon = "") => {
+    if (!val) return;
+    const row = document.createElement("div");
+    row.className = "profile-field";
+    row.innerHTML = `
+      <span class="field-key">${icon} ${key}</span>
+      <span class="field-val">${val}</span>
+    `;
+    fieldsEl.appendChild(row);
+  };
+
+  addField("Speciality",  profile.speciality,  "🏷️");
+  addField("Experience",  profile.experience,  "📅");
+  addField("Email",       profile.email        ? `<a href="mailto:${profile.email}" style="color:#4CAF50;">${profile.email}</a>` : "", "✉️");
+  addField("Phone",       profile.phone,       "📞");
+
+  // Any extra key:value pairs from the txt file
+  profile.extras.forEach(({ key, val }) => addField(key, val, "•"));
+
+  return card;
+}
+
+// ============================================================
+// Load all .txt files from media/Profiles via GitHub API
 // ============================================================
 async function loadProfiles() {
   const grid = document.getElementById("profiles-grid");
 
   try {
-    const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${PROFILES_PATH}`;
-    const res  = await fetch(url);
+    // Step 1: list files in the folder
+    const listRes = await fetch(
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${PROFILES_PATH}`
+    );
+    if (!listRes.ok) throw new Error(`GitHub API ${listRes.status} for "${PROFILES_PATH}"`);
 
-    if (!res.ok) throw new Error(`GitHub API returned ${res.status} for "${PROFILES_PATH}"`);
+    const files = await listRes.json();
+    if (!Array.isArray(files)) throw new Error("Unexpected GitHub API response.");
 
-    const files = await res.json();
-    const images = files.filter(f => IMAGE_EXTS.some(e => f.name.toLowerCase().endsWith(e)));
+    const txtFiles = files.filter(f => f.name.toLowerCase().endsWith(".txt"));
 
-    if (!Array.isArray(files)) throw new Error("Unexpected response from GitHub API");
-
-    if (images.length === 0) {
+    if (txtFiles.length === 0) {
       grid.innerHTML = `
         <p class="profiles-loading">
-          No profile images found in <code>${PROFILES_PATH}/</code>.<br>
-          Add <code>.jpg</code> or <code>.png</code> files named after each instructor<br>
-          e.g. <code>andrea_lim.jpg</code>
+          No profile files found in <code>${PROFILES_PATH}/</code>.<br>
+          Add <code>.txt</code> files, one per instructor, e.g. <code>andrea_lim.txt</code>
         </p>`;
       return;
     }
 
+    // Step 2: fetch each .txt file's content in parallel
+    const fetched = await Promise.all(
+      txtFiles.map(async f => {
+        const r = await fetch(f.download_url);
+        if (!r.ok) throw new Error(`Could not fetch ${f.name}`);
+        const text = await r.text();
+        return { filename: f.name, text };
+      })
+    );
+
+    // Step 3: parse and render
     grid.innerHTML = "";
-
-    images.forEach(f => {
-      const name = toDisplayName(f.name);
-
-      const card = document.createElement("div");
-      card.className = "profile-card";
-      card.innerHTML = `
-        <div class="profile-photo-wrap">
-          <img src="${f.download_url}" alt="${name}" loading="lazy">
-        </div>
-        <div class="profile-name">${name}</div>
-        <div class="profile-role">Instructor</div>
-      `;
-
-      card.addEventListener("click", () => openLightbox(f.download_url, name));
-      grid.appendChild(card);
+    fetched.forEach(({ filename, text }) => {
+      const profile = parseProfile(text, filename);
+      grid.appendChild(buildCard(profile));
     });
 
   } catch (err) {
@@ -252,34 +330,13 @@ async function loadProfiles() {
     grid.innerHTML = `
       <p class="profiles-loading" style="color:#c00;">
         ⚠️ Could not load profiles: ${err.message}<br><br>
-        Make sure the folder <code>${PROFILES_PATH}/</code> exists in your repo
-        and contains image files.
+        Make sure <code>${PROFILES_PATH}/</code> exists in your GitHub repo
+        and contains <code>.txt</code> files.
       </p>`;
   }
 }
 
-// ============================================================
-// Lightbox
-// ============================================================
-function openLightbox(src, name) {
-  document.getElementById("lb-img").src  = src;
-  document.getElementById("lb-name").innerText = name;
-  document.getElementById("profile-lightbox").classList.add("open");
-}
-
-document.getElementById("lb-close").onclick = closeLightbox;
-document.getElementById("profile-lightbox").addEventListener("click", function(e) {
-  if (e.target === this) closeLightbox();
-});
-function closeLightbox() {
-  document.getElementById("profile-lightbox").classList.remove("open");
-}
-
-// ============================================================
-// Init
-// ============================================================
 loadProfiles();
 </script>
-
 </body>
 </html>

@@ -425,10 +425,10 @@
     window._supabase = supabase; // shared with booking.js
 
     // ── EmailJS config ── replace these 3 values ─────────────
-   const EMAILJS_SERVICE_ID  = "service_6ptnn6y";   // e.g. "service_abc123"
-    const EMAILJS_TEMPLATE_ID = "template_ii0iyl7";  // e.g. "template_xyz789"
-    const EMAILJS_PUBLIC_KEY  = "IAT9RRoctOp4m";   // e.g. "AbCdEfGhIjKlMnOpQ"
-    const ADMIN_EMAIL         = "mailtsjp@gmail.com";
+    const EMAILJS_SERVICE_ID  = "YOUR_SERVICE_ID";   // e.g. "service_abc123"
+    const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID";  // e.g. "template_xyz789"
+    const EMAILJS_PUBLIC_KEY  = "YOUR_PUBLIC_KEY";   // e.g. "AbCdEfGhIjKlMnOpQ"
+    const ADMIN_EMAIL         = "hellohello.wellness@gmail.com";
     // ─────────────────────────────────────────────────────────
 
     let monthOffset  = 0;
@@ -480,12 +480,25 @@
 
         if (!error && data) {
           data.forEach(c => {
-            const classStart = new Date(c.start_time);
-            const classEnd   = new Date(c.end_time);
+            // Parse date parts directly from string to avoid UTC→local timezone shift
+            // e.g. "2026-04-20T09:00:00" → startDay=20 not 19
+            const startYear  = parseInt(c.start_time.slice(0,4), 10);
+            const startMonth = parseInt(c.start_time.slice(5,7), 10) - 1;
+            const startDay   = parseInt(c.start_time.slice(8,10), 10);
+            const endYear    = parseInt(c.end_time.slice(0,4), 10);
+            const endMonth   = parseInt(c.end_time.slice(5,7), 10) - 1;
+            const endDay     = parseInt(c.end_time.slice(8,10), 10);
+            const thisYear   = first.getFullYear();
+            const thisMonth  = first.getMonth();
+
             for (let d = 1; d <= daysInMonth; d++) {
-              const dayStart = new Date(first.getFullYear(), first.getMonth(), d, 0, 0, 0);
-              const dayEnd   = new Date(first.getFullYear(), first.getMonth(), d, 23, 59, 59);
-              if (dayStart <= classEnd && dayEnd >= classStart) classDays.add(d);
+              const afterStart = (thisYear > startYear)
+                || (thisYear === startYear && thisMonth > startMonth)
+                || (thisYear === startYear && thisMonth === startMonth && d >= startDay);
+              const beforeEnd  = (thisYear < endYear)
+                || (thisYear === endYear && thisMonth < endMonth)
+                || (thisYear === endYear && thisMonth === endMonth && d <= endDay);
+              if (afterStart && beforeEnd) classDays.add(d);
             }
           });
         }

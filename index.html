@@ -639,8 +639,8 @@
         alert("Error saving class: " + error.message);
       } else {
         alert(rows.length === 1
-          ? `"${title}" added for ${startDate.toDateString()}! ✅`
-          : `${rows.length} daily slots added for "${title}"!\n${startDate.toDateString()} → ${endDate.toDateString()} ✅`
+          ? `"${title}" added for ${startYMD}! ✅`
+          : `${rows.length} daily slots added for "${title}"!\n${startYMD} → ${endYMD} ✅`
         );
         hideModal("instructor-modal");
         renderCalendar();

@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schedule</title>
+<title>Events</title>
 <link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 
 /* ── Page layout ─────────────────────────────────────── */
@@ -189,10 +190,11 @@
 
 <nav class="nav">
   <a href="index.html">Home</a>
-  <a href="schedule.html">Schedule</a>
+  <a href="schedule.html">Events</a>
   <a href="services.html">Services</a>
   <a href="index.html#bookings">Bookings</a>
   <a href="about.html">About Us</a>
+  <a href="https://andrea-li-dining.vercel.app/" target="_blank" rel="noopener" style="color:#a5d6a7;">🍃 Private Dining</a>
 </nav>
 
 <main class="schedule">
@@ -249,18 +251,22 @@
 // ============================================================
 const GH_USER          = "yogandrea";
 const GH_REPO          = "Wellness";
-const EVENTS_FOLDER    = "media/Events";   // used for BOTH grid display and gallery
+const EVENTS_FOLDER    = "media/Events";
 
 const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp"];
 const PDF_EXT    = ".pdf";
 const PDF_ICON   = "https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg";
 
-// ============================================================
-// GitHub API helper
-// ============================================================
+// Use shared ghFetch from main.js (includes auth token + rate limit handling)
+// Falls back to bare fetch if main.js hasn't loaded yet (shouldn't happen)
 async function ghFetch(folder) {
-  const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${folder}`;
-  const res  = await fetch(url);
+  if (window.ghFetch && window.ghFetch !== ghFetch) return window.ghFetch(folder);
+  const headers = { "Accept": "application/vnd.github+json" };
+  if (window.GH_TOKEN) headers["Authorization"] = `Bearer ${window.GH_TOKEN}`;
+  const res = await fetch(
+    `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${folder}`,
+    { headers }
+  );
   if (!res.ok) throw new Error(`GitHub API ${res.status} for "${folder}"`);
   return res.json();
 }

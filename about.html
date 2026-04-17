@@ -6,6 +6,7 @@
   <title>About Us - Wellness Events</title>
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
 
     /* ── Page ──────────────────────────────────────────── */
@@ -142,10 +143,11 @@
 
 <nav class="nav">
   <a href="index.html">Home</a>
-  <a href="schedule.html">Schedule</a>
+  <a href="schedule.html">Events</a>
   <a href="services.html">Services</a>
   <a href="index.html#bookings">Bookings</a>
   <a href="about.html">About Us</a>
+  <a href="https://andrea-li-dining.vercel.app/" target="_blank" rel="noopener" style="color:#a5d6a7;">🍃 Private Dining</a>
 </nav>
 
 <main>
@@ -172,11 +174,11 @@ const PROFILES_PATH  = "media/Profiles";   // folder containing .txt files
 // Parse a .txt profile into a structured object.
 //
 // Supports "Key: Value" lines, e.g.:
-//   Name: Andrea Li
+//   Name: Andrea Lim
 //   Role: Yoga Instructor
 //   Speciality: Hatha Yoga, Meditation
 //   Bio: Andrea has been teaching yoga for 10 years...
-//   Email: hellohello.wellness@gmail.com
+//   Email: andrea@example.com
 //   Phone: +65 9123 4567
 //
 // Lines that don't follow "Key: Value" are collected as
@@ -287,10 +289,15 @@ function buildCard(profile) {
 async function loadProfiles() {
   const grid = document.getElementById("profiles-grid");
 
+  // Build auth headers (token shared from main.js via window.GH_TOKEN)
+  const ghHeaders = { "Accept": "application/vnd.github+json" };
+  if (window.GH_TOKEN) ghHeaders["Authorization"] = `Bearer ${window.GH_TOKEN}`;
+
   try {
     // Step 1: list files in the folder
     const listRes = await fetch(
-      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${PROFILES_PATH}`
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${PROFILES_PATH}`,
+      { headers: ghHeaders }
     );
     if (!listRes.ok) throw new Error(`GitHub API ${listRes.status} for "${PROFILES_PATH}"`);
 
@@ -309,6 +316,7 @@ async function loadProfiles() {
     }
 
     // Step 2: fetch each .txt file's content in parallel
+    // .txt files use download_url (raw content) — no auth needed for public repos
     const fetched = await Promise.all(
       txtFiles.map(async f => {
         const r = await fetch(f.download_url);
